@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Treino AB</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #111113; --bg2: #1a1a1e; --card: #222228; --card2: #2a2a32;
+    --border: #333340; --text: #f0eee8; --muted: #666680; --lite: #99968f;
+    --peito: #e85d4e; --costas: #5e9eff; --ombro: #ffb84e;
+    --biceps: #a374ff; --triceps: #4ec9a8;
+    --quad: #f97316; --posterior: #22c55e; --gluteo: #ec4899;
+    --panturrilha: #06b6d4; --core: #eab308;
+    --green: #4ec9a8; --red: #e85d4e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; padding-bottom: 120px; }
+
+  /* HEADER */
+  .header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 18px 18px 14px; position: sticky; top: 0; z-index: 100; }
+  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .logo { font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 800; letter-spacing: -0.5px; }
+  .date-badge { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
+
+  /* TREINO A / B SWITCH */
+  .treino-switch { display: flex; gap: 6px; margin-bottom: 10px; }
+  .treino-btn { flex: 1; padding: 10px 8px; border-radius: 12px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s; text-align: center; }
+  .treino-btn.active { color: var(--text); border-color: var(--border); }
+  .treino-btn.active.a { background: #1e1a2e; border-color: var(--biceps); }
+  .treino-btn.active.b { background: #1a2e1e; border-color: var(--green); }
+  .treino-btn-sub { font-family: 'DM Mono', monospace; font-size: 9px; display: block; margin-top: 2px; color: var(--muted); }
+  .treino-btn.active.a .treino-btn-sub { color: var(--biceps); }
+  .treino-btn.active.b .treino-btn-sub { color: var(--green); }
+
+  /* MODO BI-SET (só aparece no treino A) */
+  .modo-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+  .modo-tab { flex: 1; padding: 7px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10px; cursor: pointer; transition: all .2s; text-align: center; }
+  .modo-tab.active { background: var(--card2); color: var(--text); }
+  .modo-tab-time { font-size: 9px; display: block; color: var(--muted); margin-top: 1px; }
+  .modo-tab.active .modo-tab-time { color: var(--ombro); }
+
+  /* PROGRESS */
+  .progress-wrap { display: flex; align-items: center; gap: 10px; }
+  .progress-bg { flex: 1; height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; transition: width .4s cubic-bezier(.4,0,.2,1); width: 0%; }
+  .fill-a { background: var(--biceps); }
+  .fill-b { background: var(--green); }
+  .progress-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); min-width: 32px; text-align: right; }
+
+  /* VIEW TABS */
+  .view-tabs { display: flex; gap: 6px; padding: 12px 16px 0; }
+  .view-tab { flex: 1; padding: 9px; border-radius: 10px; background: var(--card); border: 1px solid var(--border); color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer; text-align: center; transition: all .2s; }
+  .view-tab.active { background: var(--card2); color: var(--text); }
+
+  /* CARDS */
+  .content { padding: 12px 16px 0; }
+  .ex-card { background: var(--card); border-radius: 14px; margin-bottom: 9px; overflow: hidden; border: 1px solid var(--border); transition: opacity .3s, border-color .3s; }
+  .ex-card.done { opacity: 0.38; border-color: var(--green); }
+  .ex-card.done .ex-num { color: var(--green); }
+
+  .ex-header { display: flex; align-items: center; gap: 10px; padding: 12px 13px 10px; cursor: pointer; }
+  .ex-num { font-family: 'Syne', sans-serif; font-size: 21px; font-weight: 800; min-width: 40px; color: var(--muted); line-height: 1; transition: color .3s; }
+  .ex-num.sm { font-size: 15px; }
+  .ex-info { flex: 1; }
+  .ex-nome { font-size: 12.5px; font-weight: 500; line-height: 1.3; margin-bottom: 5px; }
+  .ex-tags { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+  .tag-musc { font-family: 'DM Mono', monospace; font-size: 8.5px; font-weight: 500; padding: 2px 6px; border-radius: 20px; letter-spacing: 0.4px; }
+  .tag-series { font-family: 'DM Mono', monospace; font-size: 9.5px; color: var(--lite); }
+  .tag-biset { font-family: 'DM Mono', monospace; font-size: 8.5px; color: var(--bg); background: var(--ombro); padding: 2px 6px; border-radius: 20px; }
+
+  .check-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--border); background: transparent; color: transparent; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; flex-shrink: 0; font-weight: 700; }
+  .check-btn.checked { background: var(--green); border-color: var(--green); color: var(--bg); }
+  .check-btn:active { transform: scale(.88); }
+
+  .ex-body { padding: 0 13px 13px; display: none; }
+  .ex-body.open { display: block; }
+
+  .prev-info { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); background: var(--bg2); border-radius: 8px; padding: 8px 11px; margin-bottom: 11px; line-height: 1.7; }
+  .prev-title { color: var(--muted); margin-bottom: 2px; font-size: 9px; letter-spacing: 0.5px; }
+
+  .series-grid { display: flex; flex-direction: column; gap: 7px; }
+  .serie-row { display: flex; align-items: center; gap: 7px; }
+  .serie-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); min-width: 28px; }
+  .input-group { flex: 1; }
+  .serie-input { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: 9px; padding: 9px 6px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 13px; outline: none; transition: border-color .2s; text-align: center; }
+  .serie-input:focus { border-color: var(--ombro); }
+  .serie-input::placeholder { color: var(--border); font-size: 10px; }
+  .input-label { font-family: 'DM Mono', monospace; font-size: 8.5px; color: var(--muted); text-align: center; margin-top: 2px; }
+  .serie-sep { font-family: 'DM Mono', monospace; color: var(--muted); font-size: 11px; }
+
+  .ajuste-row { display: flex; align-items: center; gap: 9px; margin-top: 9px; }
+  .ajuste-label { font-family: 'DM Mono', monospace; font-size: 9.5px; color: var(--muted); min-width: 54px; }
+  .ajuste-input { flex: 1; background: var(--card2); border: 1px solid var(--border); border-radius: 9px; padding: 8px 11px; color: var(--ombro); font-family: 'DM Mono', monospace; font-size: 11px; outline: none; transition: border-color .2s; }
+  .ajuste-input:focus { border-color: var(--ombro); }
+  .ajuste-input::placeholder { color: var(--border); }
+
+  .divider-biset { display: flex; align-items: center; gap: 7px; margin: 7px 0 3px; }
+  .divider-biset-line { flex: 1; height: 1px; background: var(--border); }
+  .divider-biset-label { font-family: 'DM Mono', monospace; font-size: 8.5px; color: var(--ombro); letter-spacing: 1px; }
+
+  /* TIMER */
+  .timer-banner { position: fixed; bottom: 14px; left: 14px; right: 14px; background: var(--card2); border: 1px solid var(--border); border-radius: 16px; padding: 11px 16px; display: flex; align-items: center; justify-content: space-between; z-index: 200; }
+  .timer-display { font-family: 'DM Mono', monospace; font-size: 26px; font-weight: 500; color: var(--text); letter-spacing: -1px; min-width: 60px; transition: color .3s; }
+  .timer-display.running { color: var(--ombro); }
+  .timer-display.done { color: var(--green); }
+  .timer-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); margin-top: 1px; }
+  .timer-btns { display: flex; gap: 7px; }
+  .timer-btn { padding: 8px 14px; border-radius: 9px; border: none; font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer; transition: all .15s; }
+  .btn-start { background: var(--ombro); color: var(--bg); }
+  .btn-reset { background: var(--card); color: var(--muted); border: 1px solid var(--border); }
+  .btn-start:active, .btn-reset:active { transform: scale(.95); }
+
+  /* BACKUP */
+  .backup-row { display: flex; gap: 8px; padding: 12px 16px 0; }
+  .backup-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 8px; border-radius: 11px; border: 1px solid var(--border); background: var(--card); font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer; transition: all .2s; color: var(--text); }
+  .backup-btn:active { transform: scale(.97); opacity: .85; }
+  .backup-btn.export { border-color: var(--biceps); color: var(--biceps); background: #1e1a2e; }
+  .backup-btn.import { border-color: var(--green); color: var(--green); background: #1a2e1e; }
+  .backup-btn-icon { font-size: 15px; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--card2); border: 1px solid var(--border); border-radius: 20px; padding: 10px 20px; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text); z-index: 500; opacity: 0; transition: all .3s; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.ok { border-color: var(--green); color: var(--green); }
+  .toast.err { border-color: var(--red); color: var(--red); }
+
+  /* HISTÓRICO */
+  .hist-section { padding: 14px; }
+  .hist-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800; margin-bottom: 10px; }
+  .hist-empty { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); text-align: center; padding: 40px; }
+  .hist-entry { background: var(--card); border-radius: 12px; padding: 13px 14px; margin-bottom: 8px; border: 1px solid var(--border); }
+  .hist-meta { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 9px; }
+  .hist-date { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
+  .hist-badges { display: flex; gap: 5px; margin-top: 3px; }
+  .hist-badge { font-family: 'DM Mono', monospace; font-size: 9px; padding: 2px 7px; border-radius: 20px; }
+  .badge-a { background: #1e1a2e; color: var(--biceps); }
+  .badge-b { background: #1a2e1e; color: var(--green); }
+  .badge-dur { background: var(--card2); color: var(--ombro); }
+  .hist-delete { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--red); background: none; border: none; cursor: pointer; padding: 4px; }
+  .hist-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px; }
+  .hist-exname { font-size: 10.5px; font-weight: 500; flex: 1; padding-right: 8px; line-height: 1.4; }
+  .hist-series { font-family: 'DM Mono', monospace; font-size: 9.5px; color: var(--lite); text-align: right; }
+
+  /* TELA CONCLUSÃO */
+  .finish-overlay { display: none; position: fixed; inset: 0; z-index: 300; background: var(--bg); flex-direction: column; align-items: center; justify-content: center; padding: 36px 22px; overflow-y: auto; }
+  .finish-overlay.show { display: flex; }
+  .finish-icon { font-size: 64px; margin-bottom: 18px; }
+  .finish-title { font-family: 'Syne', sans-serif; font-size: 34px; font-weight: 800; text-align: center; margin-bottom: 5px; letter-spacing: -1px; line-height: 1.1; }
+  .finish-sub { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); text-align: center; margin-bottom: 24px; }
+  .finish-stats { width: 100%; background: var(--card); border-radius: 14px; padding: 16px; margin-bottom: 18px; border: 1px solid var(--border); }
+  .fstat { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .fstat:last-child { border-bottom: none; }
+  .fstat-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
+  .fstat-val { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text); font-weight: 500; }
+  .finish-btn { width: 100%; padding: 17px; border-radius: 13px; border: none; background: var(--text); color: var(--bg); font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer; letter-spacing: 0.5px; margin-bottom: 9px; }
+  .finish-btn-sec { width: 100%; padding: 13px; border-radius: 13px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer; }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .pulsing { animation: pulse 1s infinite; }
+
+  /* PAINEL DE STATUS */
+  .status-panel { padding: 10px 16px 0; display: flex; flex-direction: column; gap: 8px; }
+
+  .status-ultimo {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 11px 14px; display: flex; align-items: center; gap: 12px;
+  }
+  .status-ultimo-icon { font-size: 20px; }
+  .status-ultimo-info { flex: 1; }
+  .status-ultimo-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 3px; }
+  .status-ultimo-val { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; }
+  .status-ultimo-when { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 1px; }
+  .status-next-badge { font-family: 'DM Mono', monospace; font-size: 9px; padding: 3px 9px; border-radius: 20px; background: var(--card2); color: var(--muted); border: 1px solid var(--border); }
+  .status-next-badge.a { color: var(--biceps); border-color: var(--biceps); background: #1e1a2e; }
+  .status-next-badge.b { color: var(--green); border-color: var(--green); background: #1a2e1e; }
+
+  .status-ciclo {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 11px 14px;
+  }
+  .status-ciclo-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .status-ciclo-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 0.5px; }
+  .status-ciclo-count { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; }
+  .status-ciclo-count.safe { color: var(--text); }
+  .status-ciclo-count.warn { color: var(--ombro); }
+  .status-ciclo-count.ready { color: var(--red); }
+  .ciclo-bar-bg { height: 6px; background: var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 6px; }
+  .ciclo-bar-fill { height: 100%; border-radius: 6px; transition: width .5s cubic-bezier(.4,0,.2,1); }
+  .ciclo-bar-fill.safe { background: var(--biceps); }
+  .ciclo-bar-fill.warn { background: var(--ombro); }
+  .ciclo-bar-fill.ready { background: var(--red); }
+  .ciclo-msg { font-family: 'DM Mono', monospace; font-size: 9.5px; color: var(--muted); line-height: 1.5; }
+  .ciclo-msg.ready { color: var(--red); }
+
+  /* tags cores treino A */
+  .tag-musc.peito     { background: var(--peito);   color: #1a0a09; }
+  .tag-musc.costas    { background: var(--costas);  color: #09141f; }
+  .tag-musc.ombro     { background: var(--ombro);   color: #1a1000; }
+  .tag-musc.biceps    { background: var(--biceps);  color: #120a1f; }
+  .tag-musc.triceps   { background: var(--triceps); color: #091a15; }
+  /* tags cores treino B */
+  .tag-musc.quad        { background: var(--quad);        color: #1a0a00; }
+  .tag-musc.posterior   { background: var(--posterior);   color: #0a1a0a; }
+  .tag-musc.gluteo      { background: var(--gluteo);      color: #1a0a10; }
+  .tag-musc.panturrilha { background: var(--panturrilha); color: #001a1a; }
+  .tag-musc.core        { background: var(--core);        color: #1a1500; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo" id="logoText">TREINO <span id="logoLetter" style="color:var(--biceps)">A</span></div>
+    <div class="date-badge" id="dateDisplay"></div>
+  </div>
+
+  <div class="treino-switch">
+    <button class="treino-btn active a" onclick="setTreino('A')">
+      TREINO A
+      <span class="treino-btn-sub">SUPERIOR · 60-70 MIN</span>
+    </button>
+    <button class="treino-btn b" onclick="setTreino('B')">
+      TREINO B
+      <span class="treino-btn-sub">INFERIOR · 70-75 MIN</span>
+    </button>
+  </div>
+
+  <div class="modo-tabs" id="modoTabs">
+    <button class="modo-tab active" onclick="setModo(0)">BI-SET<span class="modo-tab-time">~60 min</span></button>
+    <button class="modo-tab" onclick="setModo(1)">SEM BI-SET<span class="modo-tab-time">~70 min</span></button>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bg"><div class="progress-fill fill-a" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0/9</div>
+  </div>
+</div>
+
+<div class="view-tabs">
+  <button class="view-tab active" onclick="setView('treino')">TREINO</button>
+  <button class="view-tab" onclick="setView('historico')">HISTÓRICO</button>
+</div>
+
+<div class="status-panel" id="statusPanel">
+  <div class="status-ultimo">
+    <div class="status-ultimo-icon" id="statusIcon">—</div>
+    <div class="status-ultimo-info">
+      <div class="status-ultimo-label">ÚLTIMO TREINO</div>
+      <div class="status-ultimo-val" id="statusUltimoVal">Nenhum ainda</div>
+      <div class="status-ultimo-when" id="statusUltimoWhen"></div>
+    </div>
+    <div class="status-next-badge" id="statusNextBadge">PRÓXIMO: —</div>
+  </div>
+  <div class="status-ciclo">
+    <div class="status-ciclo-top">
+      <div class="status-ciclo-label">CICLO TREINO A · META 16 SESSÕES</div>
+      <div class="status-ciclo-count safe" id="cicloCount">0/16</div>
+    </div>
+    <div class="ciclo-bar-bg"><div class="ciclo-bar-fill safe" id="cicloBar" style="width:0%"></div></div>
+    <div class="ciclo-msg" id="cicloMsg">Comece a treinar para acompanhar o ciclo.</div>
+  </div>
+</div>
+
+<div id="viewTreino"><div class="content" id="exList"></div></div>
+<div id="viewHistorico" style="display:none">
+  <div class="backup-row">
+    <button class="backup-btn export" onclick="exportarDados()">
+      <span class="backup-btn-icon">⬆️</span> EXPORTAR
+    </button>
+    <button class="backup-btn import" onclick="document.getElementById('importInput').click()">
+      <span class="backup-btn-icon">⬇️</span> IMPORTAR
+    </button>
+    <input type="file" id="importInput" accept=".json" style="display:none" onchange="importarDados(event)">
+  </div>
+  <div class="hist-section">
+    <div class="hist-title">HISTÓRICO</div>
+    <div id="histList"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="timer-banner">
+  <div>
+    <div class="timer-display" id="timerDisplay">1:15</div>
+    <div class="timer-label">DESCANSO · 75s</div>
+  </div>
+  <div class="timer-btns">
+    <button class="timer-btn btn-reset" onclick="resetTimer()">RESET</button>
+    <button class="timer-btn btn-start" id="timerBtn" onclick="toggleTimer()">START</button>
+  </div>
+</div>
+
+<div class="finish-overlay" id="finishOverlay">
+  <div class="finish-icon">💪</div>
+  <div class="finish-title" id="finishTitle">TREINO<br>CONCLUÍDO</div>
+  <div class="finish-sub" id="finishDate"></div>
+  <div class="finish-stats" id="finishStats"></div>
+  <button class="finish-btn" onclick="salvarEFechar()">SALVAR E VOLTAR</button>
+  <button class="finish-btn-sec" onclick="fecharOverlay()">FECHAR SEM SALVAR</button>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// DADOS — TREINO A
+// ══════════════════════════════════════════
+const EX_A_BISET = [
+  { id:'supino',    num:'1',  nome:'SUPINO MAQUINA INCLINADO',   musc:'peito',   series:4, reps:'8-10',  ajuste:true,  biset:null },
+  { id:'crucifixo', num:'2',  nome:'CRUCIFIXO HALTERES',          musc:'peito',   series:3, reps:'10-12', ajuste:false, biset:null },
+  { id:'puxada',    num:'3',  nome:'PUXADA POLIA BARRA ABERTO',   musc:'costas',  series:4, reps:'8-10',  ajuste:true,  biset:null },
+  { id:'pulldown',  num:'4',  nome:'PULLDOWN UNILATERAL',          musc:'costas',  series:3, reps:'10-12', ajuste:true,  biset:null },
+  { id:'desenv',    num:'5',  nome:'DESENVOLVIMENTO MAQUINA',      musc:'ombro',   series:3, reps:'8-10',  ajuste:true,  biset:null },
+  { id:'elevacao',  num:'6A', nome:'ELEVACAO LATERAL',             musc:'ombro',   series:3, reps:'12-15', ajuste:false, biset:'6A+6B' },
+  { id:'facepull',  num:'6B', nome:'FACE PULL',                    musc:'ombro',   series:3, reps:'12-15', ajuste:true,  biset:'6A+6B' },
+  { id:'rosca',     num:'7A', nome:'ROSCA DIRETA BARRA W',         musc:'biceps',  series:3, reps:'10-12', ajuste:false, biset:'7A+7B' },
+  { id:'triceps',   num:'7B', nome:'TRICEPS FRANCES POLIA CORDA', musc:'triceps', series:3, reps:'10-12', ajuste:true,  biset:'7A+7B' },
+]
+const EX_A_NORMAL = EX_A_BISET.map(e => ({
+  ...e, biset:null,
+  num: {'6A':'6','6B':'7','7A':'8','7B':'9'}[e.num] || e.num
+}))
+
+// ══════════════════════════════════════════
+// DADOS — TREINO B
+// ══════════════════════════════════════════
+const EX_B = [
+  { id:'agach',       num:'1',  nome:'AGACHAMENTO MAQUINA',        musc:'quad',        series:4, reps:'8-10',  ajuste:true  },
+  { id:'legpress',    num:'2',  nome:'LEG PRESS',                   musc:'quad',        series:3, reps:'10-12', ajuste:true  },
+  { id:'hipthrust',   num:'3',  nome:'HIP THRUST',                  musc:'gluteo',      series:4, reps:'10-12', ajuste:true  },
+  { id:'stiff',       num:'4',  nome:'STIFF HALTERES',              musc:'posterior',   series:4, reps:'10-12', ajuste:false },
+  { id:'extensora',   num:'5',  nome:'CADEIRA EXTENSORA',           musc:'quad',        series:3, reps:'12-15', ajuste:true  },
+  { id:'flexora',     num:'6',  nome:'CADEIRA FLEXORA',             musc:'posterior',   series:3, reps:'12-15', ajuste:true  },
+  { id:'mesa',        num:'7',  nome:'MESA FLEXORA',                musc:'posterior',   series:3, reps:'12-15', ajuste:true  },
+  { id:'gemeos',      num:'8A', nome:'GEMEOS LEG PRESS',            musc:'panturrilha', series:3, reps:'15-20', ajuste:false, biset:'8A+8B' },
+  { id:'soleo',       num:'8B', nome:'PANTURRILHA SENTADO (SOLEO)', musc:'panturrilha', series:3, reps:'15-20', ajuste:true,  biset:'8A+8B' },
+  { id:'abdmaq',      num:'9',  nome:'ABDOMINAL MAQUINA',           musc:'core',        series:3, reps:'15',    ajuste:true  },
+  { id:'abdinfra',    num:'10', nome:'ABDOMINAL SOLO INFRA',        musc:'core',        series:3, reps:'15',    ajuste:false },
+]
+
+// ══════════════════════════════════════════
+// ESTADO
+// ══════════════════════════════════════════
+let treinoAtual = 'A'   // 'A' ou 'B'
+let modoA = 0           // 0=biset, 1=normal
+let concluidos = new Set()
+let inicio = Date.now()
+let timerSecs = 75, timerRunning = false, timerIv = null
+
+const getLista = () => {
+  if(treinoAtual === 'B') return EX_B
+  return modoA === 0 ? EX_A_BISET : EX_A_NORMAL
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+function init() {
+  document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('pt-BR',{
+    weekday:'short', day:'2-digit', month:'short'
+  }).toUpperCase()
+  renderEx(); renderHist(); updateStatus()
+}
+
+// ══════════════════════════════════════════
+// TROCA DE TREINO A / B
+// ══════════════════════════════════════════
+function setTreino(t) {
+  treinoAtual = t
+  concluidos.clear(); inicio = Date.now()
+  document.querySelectorAll('.treino-btn').forEach(b => b.classList.remove('active'))
+  document.querySelector(`.treino-btn.${t.toLowerCase()}`).classList.add('active')
+  document.getElementById('logoLetter').textContent = t
+  document.getElementById('logoLetter').style.color = t==='A' ? 'var(--biceps)' : 'var(--green)'
+  document.getElementById('modoTabs').style.display = t==='A' ? 'flex' : 'none'
+  document.getElementById('progressFill').className = `progress-fill fill-${t.toLowerCase()}`
+  renderEx(); updateProgress()
+}
+
+function setModo(m) {
+  modoA = m
+  concluidos.clear()
+  document.querySelectorAll('.modo-tab').forEach((t,i) => t.classList.toggle('active', i===m))
+  renderEx(); updateProgress()
+}
+
+// ══════════════════════════════════════════
+// VIEW
+// ══════════════════════════════════════════
+function setView(v) {
+  document.querySelectorAll('.view-tab').forEach((t,i) =>
+    t.classList.toggle('active',(i===0&&v==='treino')||(i===1&&v==='historico')))
+  document.getElementById('viewTreino').style.display = v==='treino'?'block':'none'
+  document.getElementById('viewHistorico').style.display = v==='historico'?'block':'none'
+  if(v==='historico') renderHist()
+}
+
+// ══════════════════════════════════════════
+// RENDER EXERCÍCIOS
+// ══════════════════════════════════════════
+function renderEx() {
+  const lista = getLista()
+  const ul = document.getElementById('exList')
+  ul.innerHTML = ''
+
+  lista.forEach(ex => {
+    const prev = getPrev(ex.id)
+    const done = concluidos.has(ex.id)
+    const sm = ex.num.length > 1
+
+    const card = document.createElement('div')
+    card.className = 'ex-card' + (done?' done':'')
+    card.id = 'card-' + ex.id
+
+    // separador bi-set
+    let divider = ''
+    const showBiset = ex.biset && (treinoAtual==='B' || modoA===0)
+    if(showBiset && (ex.num.endsWith('B') || ex.num==='8B')) {
+      divider = `<div class="divider-biset">
+        <div class="divider-biset-line"></div>
+        <div class="divider-biset-label">↑ SEM DESCANSO ↑</div>
+        <div class="divider-biset-line"></div>
+      </div>`
+    }
+
+    const bisetTag = showBiset ? `<span class="tag-biset">BI-SET ${ex.biset}</span>` : ''
+
+    // histórico anterior
+    let prevHTML = ''
+    if(prev) {
+      const ps = prev.series.map((s,i)=>`S${i+1}: ${s.peso}kg×${s.reps}`).join('  ·  ')
+      prevHTML = `<div class="prev-info">
+        <div class="prev-title">ÚLTIMA SESSÃO</div>
+        <div>${ps}${prev.ajuste?'  ·  <span style="color:var(--ombro)">Aj: '+prev.ajuste+'</span>':''}</div>
+      </div>`
+    }
+
+    // séries
+    let seriesHTML = ''
+    for(let s=0; s<ex.series; s++) {
+      const ps = prev?.series[s]
+      seriesHTML += `<div class="serie-row">
+        <div class="serie-label">S${s+1}</div>
+        <div class="input-group">
+          <input class="serie-input" type="number" inputmode="decimal" step="0.5"
+            placeholder="${ps?ps.peso:'kg'}" id="p-${ex.id}-${s}">
+          <div class="input-label">kg</div>
+        </div>
+        <div class="serie-sep">×</div>
+        <div class="input-group">
+          <input class="serie-input" type="number" inputmode="numeric"
+            placeholder="${ps?ps.reps:ex.reps.split('-')[0]}" id="r-${ex.id}-${s}">
+          <div class="input-label">reps</div>
+        </div>
+      </div>`
+    }
+
+    const ajHTML = ex.ajuste ? `<div class="ajuste-row">
+      <div class="ajuste-label">AJUSTE MÁQ</div>
+      <input class="ajuste-input" type="text" inputmode="numeric"
+        placeholder="${prev?.ajuste||'pino / assento'}" id="a-${ex.id}">
+    </div>` : ''
+
+    card.innerHTML = `${divider}
+      <div class="ex-header" onclick="toggleBody('${ex.id}')">
+        <div class="ex-num ${sm?'sm':''}">${ex.num}</div>
+        <div class="ex-info">
+          <div class="ex-nome">${ex.nome}</div>
+          <div class="ex-tags">
+            <span class="tag-musc ${ex.musc}">${ex.musc.toUpperCase()}</span>
+            <span class="tag-series">${ex.series}×${ex.reps}</span>
+            ${bisetTag}
+          </div>
+        </div>
+        <button class="check-btn${done?' checked':''}"
+          onclick="event.stopPropagation();toggleDone('${ex.id}')">${done?'✓':''}</button>
+      </div>
+      <div class="ex-body" id="b-${ex.id}">
+        ${prevHTML}
+        <div class="series-grid">${seriesHTML}</div>
+        ${ajHTML}
+      </div>`
+
+    ul.appendChild(card)
+  })
+}
+
+function toggleBody(id) {
+  document.getElementById('b-'+id).classList.toggle('open')
+}
+
+// ══════════════════════════════════════════
+// CONCLUIR
+// ══════════════════════════════════════════
+function toggleDone(id) {
+  if(concluidos.has(id)) { concluidos.delete(id) }
+  else {
+    concluidos.add(id)
+    document.getElementById('b-'+id).classList.remove('open')
+  }
+  const card = document.getElementById('card-'+id)
+  card.classList.toggle('done', concluidos.has(id))
+  const btn = card.querySelector('.check-btn')
+  btn.classList.toggle('checked', concluidos.has(id))
+  btn.textContent = concluidos.has(id) ? '✓' : ''
+  updateProgress()
+  if(concluidos.size === getLista().length) setTimeout(mostrarFim, 400)
+}
+
+function updateProgress() {
+  const total = getLista().length, done = concluidos.size
+  document.getElementById('progressFill').style.width = (done/total*100)+'%'
+  document.getElementById('progressLabel').textContent = `${done}/${total}`
+}
+
+// ══════════════════════════════════════════
+// TELA CONCLUSÃO
+// ══════════════════════════════════════════
+function mostrarFim() {
+  const durMin = Math.round((Date.now()-inicio)/60000)
+  const lista = getLista()
+  let totalSeries=0, somaKg=0, cntKg=0
+  lista.forEach(ex => {
+    for(let s=0; s<ex.series; s++) {
+      totalSeries++
+      const p = parseFloat(document.getElementById(`p-${ex.id}-${s}`)?.value||0)
+      if(p>0){ somaKg+=p; cntKg++ }
+    }
+  })
+  const mediaKg = cntKg>0 ? (somaKg/cntKg).toFixed(1) : '—'
+  const nomeT = treinoAtual==='A'
+    ? (modoA===0?'A · BI-SET':'A · SEM BI-SET') : 'B · INFERIOR'
+
+  document.getElementById('finishDate').textContent =
+    new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'})
+
+  document.getElementById('finishStats').innerHTML = `
+    <div class="fstat"><div class="fstat-label">TREINO</div><div class="fstat-val">${nomeT}</div></div>
+    <div class="fstat"><div class="fstat-label">DURAÇÃO</div><div class="fstat-val">${durMin} min</div></div>
+    <div class="fstat"><div class="fstat-label">EXERCÍCIOS</div><div class="fstat-val">${lista.length}/${lista.length}</div></div>
+    <div class="fstat"><div class="fstat-label">SÉRIES TOTAIS</div><div class="fstat-val">${totalSeries}</div></div>
+    <div class="fstat"><div class="fstat-label">CARGA MÉDIA</div><div class="fstat-val">${mediaKg} kg</div></div>`
+
+  document.getElementById('finishOverlay').classList.add('show')
+  clearInterval(timerIv); timerRunning=false
+}
+
+function salvarEFechar() { salvarSessao(); fecharOverlay() }
+
+function fecharOverlay() {
+  document.getElementById('finishOverlay').classList.remove('show')
+  concluidos.clear(); inicio=Date.now()
+  renderEx(); updateProgress(); resetTimer(); updateStatus()
+}
+
+// ══════════════════════════════════════════
+// SALVAR
+// ══════════════════════════════════════════
+function salvarSessao() {
+  const lista = getLista()
+  const durMin = Math.round((Date.now()-inicio)/60000)
+  const sessao = {
+    data: new Date().toISOString(),
+    treino: treinoAtual,
+    modo: treinoAtual==='A' ? modoA : null,
+    duracao: durMin,
+    exercicios: {}
+  }
+  lista.forEach(ex => {
+    const series = []
+    for(let s=0; s<ex.series; s++) {
+      series.push({
+        peso: document.getElementById(`p-${ex.id}-${s}`)?.value||'0',
+        reps: document.getElementById(`r-${ex.id}-${s}`)?.value||'0'
+      })
+    }
+    sessao.exercicios[ex.id] = {
+      series,
+      ajuste: ex.ajuste ? (document.getElementById(`a-${ex.id}`)?.value||'') : ''
+    }
+  })
+  const h = getHist()
+  h.unshift(sessao)
+  if(h.length>60) h.pop()
+  localStorage.setItem('th_ab', JSON.stringify(h))
+}
+
+// ══════════════════════════════════════════
+// TIMER
+// ══════════════════════════════════════════
+function toggleTimer() {
+  if(timerRunning) {
+    clearInterval(timerIv); timerRunning=false
+    document.getElementById('timerBtn').textContent='START'
+    document.getElementById('timerDisplay').classList.remove('running','pulsing')
+  } else {
+    timerRunning=true
+    document.getElementById('timerBtn').textContent='STOP'
+    document.getElementById('timerDisplay').classList.add('running')
+    timerIv = setInterval(()=>{
+      timerSecs--; updateTimerUI()
+      if(timerSecs<=0) {
+        clearInterval(timerIv); timerRunning=false
+        const d = document.getElementById('timerDisplay')
+        d.classList.remove('running'); d.classList.add('done','pulsing')
+        d.textContent='GO!'
+        document.getElementById('timerBtn').textContent='START'
+        setTimeout(()=>{ d.classList.remove('done','pulsing'); resetTimer() }, 2000)
+      }
+    },1000)
+  }
+}
+
+function resetTimer() {
+  clearInterval(timerIv); timerRunning=false; timerSecs=75
+  updateTimerUI()
+  document.getElementById('timerBtn').textContent='START'
+  document.getElementById('timerDisplay').classList.remove('running','done','pulsing')
+}
+
+function updateTimerUI() {
+  const m=Math.floor(timerSecs/60), s=timerSecs%60
+  document.getElementById('timerDisplay').textContent=`${m}:${s.toString().padStart(2,'0')}`
+}
+
+// ══════════════════════════════════════════
+// HISTÓRICO
+// ══════════════════════════════════════════
+const getHist = () => { try{ return JSON.parse(localStorage.getItem('th_ab'))||[] }catch{ return [] } }
+
+const getPrev = id => {
+  for(const s of getHist()) if(s.exercicios?.[id]) return s.exercicios[id]
+  return null
+}
+
+function renderHist() {
+  const h = getHist()
+  const el = document.getElementById('histList')
+  if(!h.length) { el.innerHTML='<div class="hist-empty">Nenhuma sessão salva ainda.</div>'; return }
+  el.innerHTML=''
+  h.forEach((s,idx)=>{
+    const d = new Date(s.data)
+    const lista = s.treino==='B' ? EX_B :
+      (s.modo===0 ? EX_A_BISET : EX_A_NORMAL)
+    const badgeClass = s.treino==='A' ? 'badge-a' : 'badge-b'
+    const modoLabel = s.treino==='A' ? (s.modo===0?'BI-SET':'SEM BI-SET') : 'INFERIOR'
+    let rows=''
+    lista.forEach(ex=>{
+      const data=s.exercicios?.[ex.id]; if(!data) return
+      const ps = data.series.map(sr=>`${sr.peso}kg×${sr.reps}`).join(' · ')
+      const aj = data.ajuste?` · <span style="color:var(--ombro)">Aj:${data.ajuste}</span>`:''
+      rows+=`<div class="hist-row">
+        <div class="hist-exname">${ex.num}. ${ex.nome}</div>
+        <div class="hist-series">${ps}${aj}</div>
+      </div>`
+    })
+    const entry=document.createElement('div')
+    entry.className='hist-entry'
+    entry.innerHTML=`
+      <div class="hist-meta">
+        <div>
+          <div class="hist-date">${d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'2-digit'}).toUpperCase()} · ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
+          <div class="hist-badges">
+            <span class="hist-badge ${badgeClass}">TREINO ${s.treino} · ${modoLabel}</span>
+            ${s.duracao?`<span class="hist-badge badge-dur">${s.duracao} min</span>`:''}
+          </div>
+        </div>
+        <button class="hist-delete" onclick="delHist(${idx})">✕</button>
+      </div>${rows}`
+    el.appendChild(entry)
+  })
+}
+
+function delHist(idx) {
+  const h=getHist(); h.splice(idx,1)
+  localStorage.setItem('th_ab',JSON.stringify(h))
+  renderHist(); renderEx(); updateStatus()
+}
+
+// ══════════════════════════════════════════
+// EXPORTAR / IMPORTAR
+// ══════════════════════════════════════════
+function exportarDados() {
+  const h = getHist()
+  if(!h.length) { showToast('Nenhum dado para exportar.', 'err'); return }
+
+  const payload = { versao: 1, exportado: new Date().toISOString(), sessoes: h }
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+  const data = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')
+  a.href     = url
+  a.download = `treino-backup-${data}.json`
+  a.click()
+  URL.revokeObjectURL(url)
+  showToast('✓ Backup exportado!', 'ok')
+}
+
+function importarDados(event) {
+  const file = event.target.files[0]
+  if(!file) return
+
+  const reader = new FileReader()
+  reader.onload = e => {
+    try {
+      const raw = JSON.parse(e.target.result)
+
+      // aceita tanto o formato com wrapper { versao, sessoes } quanto array direto
+      const novas = Array.isArray(raw) ? raw : (raw.sessoes || [])
+
+      if(!novas.length) { showToast('Arquivo vazio ou inválido.', 'err'); return }
+
+      const existentes = getHist()
+
+      // merge: une os dois arrays e remove duplicatas por data+treino
+      const mapa = new Map()
+      ;[...existentes, ...novas].forEach(s => {
+        const chave = s.data + (s.treino||'')
+        if(!mapa.has(chave)) mapa.set(chave, s)
+      })
+
+      const merged = Array.from(mapa.values())
+        .sort((a,b) => new Date(b.data) - new Date(a.data))
+
+      localStorage.setItem('th_ab', JSON.stringify(merged))
+      renderHist(); updateStatus()
+      showToast(`✓ ${novas.length} sessão(ões) importada(s)!`, 'ok')
+    } catch {
+      showToast('Erro ao ler arquivo. Verifique o formato.', 'err')
+    }
+    // limpa o input para permitir reimportar o mesmo arquivo
+    event.target.value = ''
+  }
+  reader.readAsText(file)
+}
+
+function showToast(msg, tipo='ok') {
+  const t = document.getElementById('toast')
+  t.textContent = msg
+  t.className = `toast ${tipo} show`
+  setTimeout(() => { t.className = 'toast' }, 2800)
+}
+
+// ══════════════════════════════════════════
+// PAINEL DE STATUS
+// ══════════════════════════════════════════
+function updateStatus() {
+  const h = getHist()
+  const META = 16
+
+  // ── ÚLTIMO TREINO ──
+  const ultimo = h[0]
+  const iconEl = document.getElementById('statusIcon')
+  const valEl  = document.getElementById('statusUltimoVal')
+  const whenEl = document.getElementById('statusUltimoWhen')
+  const nextEl = document.getElementById('statusNextBadge')
+
+  if(!ultimo) {
+    iconEl.textContent = '—'
+    valEl.textContent  = 'Nenhum ainda'
+    valEl.style.color  = 'var(--muted)'
+    whenEl.textContent = ''
+    nextEl.textContent = 'PRÓXIMO: —'
+    nextEl.className   = 'status-next-badge'
+  } else {
+    const t    = ultimo.treino
+    const d    = new Date(ultimo.data)
+    const diffH = Math.floor((Date.now() - d) / 3600000)
+    const diffD = Math.floor((Date.now() - d) / 86400000)
+    let quando  = diffH < 1 ? 'Há menos de 1h'
+                : diffH < 24 ? `Há ${diffH}h`
+                : diffD === 1 ? 'Ontem'
+                : diffD < 7  ? `Há ${diffD} dias`
+                : d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'})
+
+    const modoLabel = t==='A' ? (ultimo.modo===0?' · BI-SET':' · SEM BI-SET') : ''
+    iconEl.textContent = t==='A' ? '💪' : '🦵'
+    valEl.textContent  = `TREINO ${t}${modoLabel}`
+    valEl.style.color  = t==='A' ? 'var(--biceps)' : 'var(--green)'
+    whenEl.textContent = quando + (ultimo.duracao ? ` · ${ultimo.duracao} min` : '')
+
+    const proximo = t==='A' ? 'B' : 'A'
+    nextEl.textContent = `PRÓXIMO: ${proximo}`
+    nextEl.className   = `status-next-badge ${proximo.toLowerCase()}`
+  }
+
+  // ── CICLO TREINO A ──
+  const sessoesA = h.filter(s => s.treino === 'A').length
+  const pct      = Math.min(sessoesA / META * 100, 100)
+
+  const countEl = document.getElementById('cicloCount')
+  const barEl   = document.getElementById('cicloBar')
+  const msgEl   = document.getElementById('cicloMsg')
+
+  countEl.textContent = `${sessoesA}/${META}`
+
+  let estado = sessoesA >= META ? 'ready' : sessoesA >= META * 0.75 ? 'warn' : 'safe'
+  countEl.className = `status-ciclo-count ${estado}`
+  barEl.className   = `ciclo-bar-fill ${estado}`
+  barEl.style.width = pct + '%'
+
+  if(estado === 'safe') {
+    msgEl.textContent = sessoesA === 0
+      ? 'Complete sessões para acompanhar o ciclo.'
+      : `Faltam ${META - sessoesA} sessão(ões) para revisar os exercícios.`
+    msgEl.className = 'ciclo-msg'
+  } else if(estado === 'warn') {
+    msgEl.textContent = `Quase lá — ${META - sessoesA} sessão(ões) para trocar o treino.`
+    msgEl.className = 'ciclo-msg'
+  } else {
+    msgEl.textContent = '🔄 16 sessões completas. Hora de trocar — chama o mentor!'
+    msgEl.className = 'ciclo-msg ready'
+  }
+}
+
+init()
+</script>
+</body>
+</html>
