@@ -35,12 +35,6 @@
   .treino-btn.active.a .treino-btn-sub { color: var(--biceps); }
   .treino-btn.active.b .treino-btn-sub { color: var(--green); }
 
-  /* MODO BI-SET (só aparece no treino A) */
-  .modo-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
-  .modo-tab { flex: 1; padding: 7px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10px; cursor: pointer; transition: all .2s; text-align: center; }
-  .modo-tab.active { background: var(--card2); color: var(--text); }
-  .modo-tab-time { font-size: 9px; display: block; color: var(--muted); margin-top: 1px; }
-  .modo-tab.active .modo-tab-time { color: var(--ombro); }
 
   /* PROGRESS */
   .progress-wrap { display: flex; align-items: center; gap: 10px; }
@@ -69,7 +63,6 @@
   .ex-tags { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
   .tag-musc { font-family: 'DM Mono', monospace; font-size: 8.5px; font-weight: 500; padding: 2px 6px; border-radius: 20px; letter-spacing: 0.4px; }
   .tag-series { font-family: 'DM Mono', monospace; font-size: 9.5px; color: var(--lite); }
-  .tag-biset { font-family: 'DM Mono', monospace; font-size: 8.5px; color: var(--bg); background: var(--ombro); padding: 2px 6px; border-radius: 20px; }
 
   .check-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--border); background: transparent; color: transparent; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; flex-shrink: 0; font-weight: 700; }
   .check-btn.checked { background: var(--green); border-color: var(--green); color: var(--bg); }
@@ -97,9 +90,6 @@
   .ajuste-input:focus { border-color: var(--ombro); }
   .ajuste-input::placeholder { color: var(--border); }
 
-  .divider-biset { display: flex; align-items: center; gap: 7px; margin: 7px 0 3px; }
-  .divider-biset-line { flex: 1; height: 1px; background: var(--border); }
-  .divider-biset-label { font-family: 'DM Mono', monospace; font-size: 8.5px; color: var(--ombro); letter-spacing: 1px; }
 
   /* TIMER */
   .timer-banner { position: fixed; bottom: 14px; left: 14px; right: 14px; background: var(--card2); border: 1px solid var(--border); border-radius: 16px; padding: 11px 16px; display: flex; align-items: center; justify-content: space-between; z-index: 200; }
@@ -220,20 +210,14 @@
   <div class="treino-switch">
     <button class="treino-btn active a" onclick="setTreino('A')">
       TREINO A
-      <span class="treino-btn-sub">SUPERIOR · 60-70 MIN</span>
+      <span class="treino-btn-sub">SUPERIOR · 60-65 MIN</span>
     </button>
     <button class="treino-btn b" onclick="setTreino('B')">
       TREINO B
-      <span class="treino-btn-sub">INFERIOR · 70-75 MIN</span>
+      <span class="treino-btn-sub">INFERIOR · 65-70 MIN</span>
     </button>
   </div>
-
-  <div class="modo-tabs" id="modoTabs">
-    <button class="modo-tab active" onclick="setModo(0)">BI-SET<span class="modo-tab-time">~60 min</span></button>
-    <button class="modo-tab" onclick="setModo(1)">SEM BI-SET<span class="modo-tab-time">~70 min</span></button>
-  </div>
-
-  <div class="progress-wrap">
+<div class="progress-wrap">
     <div class="progress-bg"><div class="progress-fill fill-a" id="progressFill"></div></div>
     <div class="progress-label" id="progressLabel">0/9</div>
   </div>
@@ -307,52 +291,40 @@
 // ══════════════════════════════════════════
 // DADOS — TREINO A
 // ══════════════════════════════════════════
-const EX_A_BISET = [
-  { id:'supino',    num:'1',  nome:'SUPINO MAQUINA INCLINADO',   musc:'peito',   series:4, reps:'8-10',  ajuste:true,  biset:null },
-  { id:'crucifixo', num:'2',  nome:'CRUCIFIXO HALTERES',          musc:'peito',   series:3, reps:'10-12', ajuste:false, biset:null },
-  { id:'puxada',    num:'3',  nome:'PUXADA POLIA BARRA ABERTO',   musc:'costas',  series:4, reps:'8-10',  ajuste:true,  biset:null },
-  { id:'pulldown',  num:'4',  nome:'PULLDOWN UNILATERAL',          musc:'costas',  series:3, reps:'10-12', ajuste:true,  biset:null },
-  { id:'desenv',    num:'5',  nome:'DESENVOLVIMENTO MAQUINA',      musc:'ombro',   series:3, reps:'8-10',  ajuste:true,  biset:null },
-  { id:'elevacao',  num:'6A', nome:'ELEVACAO LATERAL',             musc:'ombro',   series:3, reps:'12-15', ajuste:false, biset:'6A+6B' },
-  { id:'facepull',  num:'6B', nome:'FACE PULL',                    musc:'ombro',   series:3, reps:'12-15', ajuste:true,  biset:'6A+6B' },
-  { id:'rosca',     num:'7A', nome:'ROSCA DIRETA BARRA W',         musc:'biceps',  series:3, reps:'10-12', ajuste:false, biset:'7A+7B' },
-  { id:'triceps',   num:'7B', nome:'TRICEPS FRANCES POLIA CORDA', musc:'triceps', series:3, reps:'10-12', ajuste:true,  biset:'7A+7B' },
+// ══════════════════════════════════════════
+// DADOS — TREINO A
+// ══════════════════════════════════════════
+const EX_A = [
+  { id:'supino',   num:'1', nome:'SUPINO MAQUINA INCLINADO',   musc:'peito',   series:4, reps:'8-10',  ajuste:true  },
+  { id:'puxada',   num:'2', nome:'PUXADA POLIA BARRA ABERTO',  musc:'costas',  series:4, reps:'8-10',  ajuste:true  },
+  { id:'desenv',   num:'3', nome:'DESENVOLVIMENTO MAQUINA',     musc:'ombro',   series:3, reps:'8-10',  ajuste:true  },
+  { id:'elevacao', num:'4', nome:'ELEVACAO LATERAL',            musc:'ombro',   series:3, reps:'12-15', ajuste:false },
+  { id:'facepull', num:'5', nome:'FACE PULL',                   musc:'ombro',   series:3, reps:'12-15', ajuste:true  },
+  { id:'rosca',    num:'6', nome:'ROSCA DIRETA BARRA W',        musc:'biceps',  series:3, reps:'10-12', ajuste:false },
+  { id:'triceps',  num:'7', nome:'TRICEPS FRANCES POLIA CORDA', musc:'triceps', series:3, reps:'10-12', ajuste:true  },
 ]
-const EX_A_NORMAL = EX_A_BISET.map(e => ({
-  ...e, biset:null,
-  num: {'6A':'6','6B':'7','7A':'8','7B':'9'}[e.num] || e.num
-}))
 
 // ══════════════════════════════════════════
 // DADOS — TREINO B
 // ══════════════════════════════════════════
 const EX_B = [
-  { id:'agach',       num:'1',  nome:'AGACHAMENTO MAQUINA',        musc:'quad',        series:4, reps:'8-10',  ajuste:true  },
-  { id:'legpress',    num:'2',  nome:'LEG PRESS',                   musc:'quad',        series:3, reps:'10-12', ajuste:true  },
-  { id:'hipthrust',   num:'3',  nome:'HIP THRUST',                  musc:'gluteo',      series:4, reps:'10-12', ajuste:true  },
-  { id:'stiff',       num:'4',  nome:'STIFF HALTERES',              musc:'posterior',   series:4, reps:'10-12', ajuste:false },
-  { id:'extensora',   num:'5',  nome:'CADEIRA EXTENSORA',           musc:'quad',        series:3, reps:'12-15', ajuste:true  },
-  { id:'flexora',     num:'6',  nome:'CADEIRA FLEXORA',             musc:'posterior',   series:3, reps:'12-15', ajuste:true  },
-  { id:'mesa',        num:'7',  nome:'MESA FLEXORA',                musc:'posterior',   series:3, reps:'12-15', ajuste:true  },
-  { id:'gemeos',      num:'8A', nome:'GEMEOS LEG PRESS',            musc:'panturrilha', series:3, reps:'15-20', ajuste:false, biset:'8A+8B' },
-  { id:'soleo',       num:'8B', nome:'PANTURRILHA SENTADO (SOLEO)', musc:'panturrilha', series:3, reps:'15-20', ajuste:true,  biset:'8A+8B' },
-  { id:'abdmaq',      num:'9',  nome:'ABDOMINAL MAQUINA',           musc:'core',        series:3, reps:'15',    ajuste:true  },
-  { id:'abdinfra',    num:'10', nome:'ABDOMINAL SOLO INFRA',        musc:'core',        series:3, reps:'15',    ajuste:false },
+  { id:'agach',     num:'1', nome:'AGACHAMENTO MAQUINA',        musc:'quad',        series:4, reps:'8-10',  ajuste:true  },
+  { id:'legpress',  num:'2', nome:'LEG PRESS',                   musc:'quad',        series:3, reps:'10-12', ajuste:true  },
+  { id:'hipthrust', num:'3', nome:'HIP THRUST',                  musc:'gluteo',      series:4, reps:'10-12', ajuste:true  },
+  { id:'stiff',     num:'4', nome:'STIFF HALTERES',              musc:'posterior',   series:4, reps:'10-12', ajuste:false },
+  { id:'flexora',   num:'5', nome:'CADEIRA FLEXORA',             musc:'posterior',   series:3, reps:'12-15', ajuste:true  },
+  { id:'soleo',     num:'6', nome:'PANTURRILHA SENTADO (SOLEO)', musc:'panturrilha', series:3, reps:'15-20', ajuste:true  },
 ]
 
 // ══════════════════════════════════════════
 // ESTADO
 // ══════════════════════════════════════════
-let treinoAtual = 'A'   // 'A' ou 'B'
-let modoA = 0           // 0=biset, 1=normal
+let treinoAtual = 'A'
 let concluidos = new Set()
 let inicio = Date.now()
 let timerSecs = 75, timerRunning = false, timerIv = null
 
-const getLista = () => {
-  if(treinoAtual === 'B') return EX_B
-  return modoA === 0 ? EX_A_BISET : EX_A_NORMAL
-}
+const getLista = () => treinoAtual === 'B' ? EX_B : EX_A
 
 // ══════════════════════════════════════════
 // INIT
@@ -374,17 +346,10 @@ function setTreino(t) {
   document.querySelector(`.treino-btn.${t.toLowerCase()}`).classList.add('active')
   document.getElementById('logoLetter').textContent = t
   document.getElementById('logoLetter').style.color = t==='A' ? 'var(--biceps)' : 'var(--green)'
-  document.getElementById('modoTabs').style.display = t==='A' ? 'flex' : 'none'
   document.getElementById('progressFill').className = `progress-fill fill-${t.toLowerCase()}`
   renderEx(); updateProgress()
 }
 
-function setModo(m) {
-  modoA = m
-  concluidos.clear()
-  document.querySelectorAll('.modo-tab').forEach((t,i) => t.classList.toggle('active', i===m))
-  renderEx(); updateProgress()
-}
 
 // ══════════════════════════════════════════
 // VIEW
@@ -413,19 +378,6 @@ function renderEx() {
     const card = document.createElement('div')
     card.className = 'ex-card' + (done?' done':'')
     card.id = 'card-' + ex.id
-
-    // separador bi-set
-    let divider = ''
-    const showBiset = ex.biset && (treinoAtual==='B' || modoA===0)
-    if(showBiset && (ex.num.endsWith('B') || ex.num==='8B')) {
-      divider = `<div class="divider-biset">
-        <div class="divider-biset-line"></div>
-        <div class="divider-biset-label">↑ SEM DESCANSO ↑</div>
-        <div class="divider-biset-line"></div>
-      </div>`
-    }
-
-    const bisetTag = showBiset ? `<span class="tag-biset">BI-SET ${ex.biset}</span>` : ''
 
     // histórico anterior
     let prevHTML = ''
@@ -463,7 +415,7 @@ function renderEx() {
         placeholder="${prev?.ajuste||'pino / assento'}" id="a-${ex.id}">
     </div>` : ''
 
-    card.innerHTML = `${divider}
+    card.innerHTML = `
       <div class="ex-header" onclick="toggleBody('${ex.id}')">
         <div class="ex-num ${sm?'sm':''}">${ex.num}</div>
         <div class="ex-info">
@@ -471,7 +423,7 @@ function renderEx() {
           <div class="ex-tags">
             <span class="tag-musc ${ex.musc}">${ex.musc.toUpperCase()}</span>
             <span class="tag-series">${ex.series}×${ex.reps}</span>
-            ${bisetTag}
+            
           </div>
         </div>
         <button class="check-btn${done?' checked':''}"
@@ -530,8 +482,7 @@ function mostrarFim() {
     }
   })
   const mediaKg = cntKg>0 ? (somaKg/cntKg).toFixed(1) : '—'
-  const nomeT = treinoAtual==='A'
-    ? (modoA===0?'A · BI-SET':'A · SEM BI-SET') : 'B · INFERIOR'
+  const nomeT = treinoAtual==='A' ? 'A · SUPERIOR' : 'B · INFERIOR'
 
   document.getElementById('finishDate').textContent =
     new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'})
@@ -564,7 +515,7 @@ function salvarSessao() {
   const sessao = {
     data: new Date().toISOString(),
     treino: treinoAtual,
-    modo: treinoAtual==='A' ? modoA : null,
+    modo: null,
     duracao: durMin,
     exercicios: {}
   }
@@ -643,9 +594,9 @@ function renderHist() {
   h.forEach((s,idx)=>{
     const d = new Date(s.data)
     const lista = s.treino==='B' ? EX_B :
-      (s.modo===0 ? EX_A_BISET : EX_A_NORMAL)
+      EX_A
     const badgeClass = s.treino==='A' ? 'badge-a' : 'badge-b'
-    const modoLabel = s.treino==='A' ? (s.modo===0?'BI-SET':'SEM BI-SET') : 'INFERIOR'
+    const modoLabel = s.treino==='A' ? 'SUPERIOR' : 'INFERIOR'
     let rows=''
     lista.forEach(ex=>{
       const data=s.exercicios?.[ex.id]; if(!data) return
@@ -775,7 +726,7 @@ function updateStatus() {
                 : diffD < 7  ? `Há ${diffD} dias`
                 : d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'})
 
-    const modoLabel = t==='A' ? (ultimo.modo===0?' · BI-SET':' · SEM BI-SET') : ''
+    const modoLabel = ''
     iconEl.textContent = t==='A' ? '💪' : '🦵'
     valEl.textContent  = `TREINO ${t}${modoLabel}`
     valEl.style.color  = t==='A' ? 'var(--biceps)' : 'var(--green)'
