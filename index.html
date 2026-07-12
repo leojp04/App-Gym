@@ -370,6 +370,7 @@ auth.onAuthStateChanged(async user => {
 })
 
 async function loadHistFromCloud() {
+  let draft = null
   try {
     const doc = await db.collection('users').doc(uid).get()
     if(doc.exists && doc.data().sessions) {
@@ -380,11 +381,14 @@ async function loadHistFromCloud() {
       histCache = loadLocalCache()
       if(histCache.length) await saveHistToCloud()
     }
+    draft = (doc.exists && doc.data().draft) || loadLocalDraft()
   } catch(err) {
     console.error('Falha ao carregar da nuvem, usando cache local.', err)
     histCache = loadLocalCache()
+    draft = loadLocalDraft()
   }
   renderEx(); renderHist(); updateStatus()
+  if(draft) restoreDraft(draft)
 }
 
 function saveHistToCloud() {
@@ -401,6 +405,76 @@ function persistHist(h) {
   histCache = h
   localStorage.setItem('th_ab', JSON.stringify(h))
   saveHistToCloud()
+}
+
+// ══════════════════════════════════════════
+// RASCUNHO DO TREINO EM ANDAMENTO
+// ══════════════════════════════════════════
+let draftSyncTimeout = null
+
+function getDraftFromDOM() {
+  const lista = getLista()
+  const draft = { treino: treinoAtual, concluidos: [...concluidos], inicio, values: {} }
+  lista.forEach(ex => {
+    for(let s=0; s<ex.series; s++) {
+      const p = document.getElementById(`p-${ex.id}-${s}`)
+      const r = document.getElementById(`r-${ex.id}-${s}`)
+      if(p) draft.values[`p-${ex.id}-${s}`] = p.value
+      if(r) draft.values[`r-${ex.id}-${s}`] = r.value
+    }
+    if(ex.ajuste) {
+      const a = document.getElementById(`a-${ex.id}`)
+      if(a) draft.values[`a-${ex.id}`] = a.value
+    }
+  })
+  return draft
+}
+
+function saveDraft() {
+  const draft = getDraftFromDOM()
+  localStorage.setItem('th_ab_draft', JSON.stringify(draft))
+  clearTimeout(draftSyncTimeout)
+  draftSyncTimeout = setTimeout(() => {
+    if(uid) db.collection('users').doc(uid).set({ draft }, { merge: true }).catch(()=>{})
+  }, 800)
+}
+
+function loadLocalDraft() {
+  try { return JSON.parse(localStorage.getItem('th_ab_draft')) || null } catch { return null }
+}
+
+function clearDraft() {
+  localStorage.removeItem('th_ab_draft')
+  clearTimeout(draftSyncTimeout)
+  if(uid) db.collection('users').doc(uid).set({ draft: firebase.firestore.FieldValue.delete() }, { merge: true }).catch(()=>{})
+}
+
+function restoreDraft(draft) {
+  if(!draft || !draft.treino) return
+  treinoAtual = draft.treino
+  concluidos = new Set(draft.concluidos || [])
+  inicio = draft.inicio || Date.now()
+
+  document.querySelectorAll('.treino-btn').forEach(b => b.classList.remove('active'))
+  document.querySelector(`.treino-btn.${treinoAtual.toLowerCase()}`).classList.add('active')
+  document.getElementById('logoLetter').textContent = treinoAtual
+  document.getElementById('logoLetter').style.color = treinoAtual==='A' ? 'var(--biceps)' : 'var(--green)'
+  document.getElementById('progressFill').className = `progress-fill fill-${treinoAtual.toLowerCase()}`
+
+  renderEx()
+
+  Object.entries(draft.values || {}).forEach(([id, val]) => {
+    const el = document.getElementById(id)
+    if(el) el.value = val
+  })
+  concluidos.forEach(id => {
+    const card = document.getElementById('card-'+id)
+    if(!card) return
+    card.classList.add('done')
+    const btn = card.querySelector('.check-btn')
+    btn.classList.add('checked'); btn.textContent = '✓'
+  })
+  updateProgress()
 }
 
 // ══════════════════════════════════════════
@@ -464,6 +538,7 @@ function setTreino(t) {
   document.getElementById('logoLetter').style.color = t==='A' ? 'var(--biceps)' : 'var(--green)'
   document.getElementById('progressFill').className = `progress-fill fill-${t.toLowerCase()}`
   renderEx(); updateProgress()
+  saveDraft()
 }
 
 
@@ -513,13 +588,13 @@ function renderEx() {
         <div class="serie-label">S${s+1}</div>
         <div class="input-group">
           <input class="serie-input" type="number" inputmode="decimal" step="any"
-            placeholder="${ps?ps.peso:'kg'}" id="p-${ex.id}-${s}">
+            placeholder="${ps?ps.peso:'kg'}" id="p-${ex.id}-${s}" oninput="saveDraft()">
           <div class="input-label">kg</div>
         </div>
         <div class="serie-sep">×</div>
         <div class="input-group">
           <input class="serie-input" type="number" inputmode="numeric"
-            placeholder="${ps?ps.reps:ex.reps.split('-')[0]}" id="r-${ex.id}-${s}">
+            placeholder="${ps?ps.reps:ex.reps.split('-')[0]}" id="r-${ex.id}-${s}" oninput="saveDraft()">
           <div class="input-label">reps</div>
         </div>
       </div>`
@@ -528,7 +603,7 @@ function renderEx() {
     const ajHTML = ex.ajuste ? `<div class="ajuste-row">
       <div class="ajuste-label">AJUSTE MÁQ</div>
       <input class="ajuste-input" type="text" inputmode="numeric"
-        placeholder="${prev?.ajuste||'pino / assento'}" id="a-${ex.id}">
+        placeholder="${prev?.ajuste||'pino / assento'}" id="a-${ex.id}" oninput="saveDraft()">
     </div>` : ''
 
     card.innerHTML = `
@@ -574,6 +649,7 @@ function toggleDone(id) {
   btn.classList.toggle('checked', concluidos.has(id))
   btn.textContent = concluidos.has(id) ? '✓' : ''
   updateProgress()
+  saveDraft()
   if(concluidos.size === getLista().length) setTimeout(mostrarFim, 400)
 }
 
@@ -619,6 +695,7 @@ function salvarEFechar() { salvarSessao(); fecharOverlay() }
 function fecharOverlay() {
   document.getElementById('finishOverlay').classList.remove('show')
   concluidos.clear(); inicio=Date.now()
+  clearDraft()
   renderEx(); updateProgress(); resetTimer(); updateStatus()
 }
 
@@ -797,8 +874,9 @@ function processarArquivoImportado(file) {
       const merged = Array.from(mapa.values())
         .sort((a,b) => new Date(b.data) - new Date(a.data))
 
+      const draftAtual = getDraftFromDOM()
       persistHist(merged)
-      renderHist(); updateStatus()
+      restoreDraft(draftAtual); renderHist(); updateStatus()
       showToast(`✓ ${novas.length} sessão(ões) importada(s)!`, 'ok')
     } catch {
       showToast('Erro ao ler arquivo. Verifique o formato.', 'err')
