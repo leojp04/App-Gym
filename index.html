@@ -163,6 +163,12 @@
   .user-badge { display: flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); cursor: pointer; }
   .user-badge img { width: 18px; height: 18px; border-radius: 50%; }
 
+  /* DRAG & DROP IMPORT */
+  .drop-overlay { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(17,17,19,0.92); border: 3px dashed var(--green); align-items: center; justify-content: center; flex-direction: column; gap: 10px; pointer-events: none; }
+  .drop-overlay.show { display: flex; }
+  .drop-overlay-icon { font-size: 48px; }
+  .drop-overlay-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: var(--green); }
+
   /* PAINEL DE STATUS */
   .status-panel { padding: 10px 16px 0; display: flex; flex-direction: column; gap: 8px; }
 
@@ -283,6 +289,11 @@
   <div class="login-sub">Entre para salvar seus treinos na nuvem<br>e acessar de qualquer aparelho.</div>
   <button class="login-btn" onclick="loginGoogle()">Entrar com Google</button>
   <div class="login-status" id="loginStatus"></div>
+</div>
+
+<div class="drop-overlay" id="dropOverlay">
+  <div class="drop-overlay-icon">📥</div>
+  <div class="drop-overlay-text">Solte o arquivo para importar</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -756,7 +767,13 @@ function exportarDados() {
 
 function importarDados(event) {
   const file = event.target.files[0]
+  processarArquivoImportado(file)
+  event.target.value = ''
+}
+
+function processarArquivoImportado(file) {
   if(!file) return
+  if(!file.name.endsWith('.json')) { showToast('Solte um arquivo .json de backup.', 'err'); return }
 
   const reader = new FileReader()
   reader.onload = e => {
@@ -786,8 +803,6 @@ function importarDados(event) {
     } catch {
       showToast('Erro ao ler arquivo. Verifique o formato.', 'err')
     }
-    // limpa o input para permitir reimportar o mesmo arquivo
-    event.target.value = ''
   }
   reader.readAsText(file)
 }
@@ -870,6 +885,31 @@ function updateStatus() {
     msgEl.className = 'ciclo-msg ready'
   }
 }
+
+// ══════════════════════════════════════════
+// DRAG & DROP — arraste o backup .json pra importar
+// ══════════════════════════════════════════
+let dragCounter = 0
+const dropOverlay = document.getElementById('dropOverlay')
+
+window.addEventListener('dragenter', e => {
+  e.preventDefault()
+  dragCounter++
+  dropOverlay.classList.add('show')
+})
+window.addEventListener('dragover', e => e.preventDefault())
+window.addEventListener('dragleave', e => {
+  e.preventDefault()
+  dragCounter--
+  if(dragCounter<=0) { dragCounter=0; dropOverlay.classList.remove('show') }
+})
+window.addEventListener('drop', e => {
+  e.preventDefault()
+  dragCounter = 0
+  dropOverlay.classList.remove('show')
+  const file = e.dataTransfer.files[0]
+  processarArquivoImportado(file)
+})
 
 init()
 </script>
