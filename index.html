@@ -151,6 +151,18 @@
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
   .pulsing { animation: pulse 1s infinite; }
 
+  /* LOGIN */
+  .login-overlay { display: flex; position: fixed; inset: 0; z-index: 1000; background: var(--bg); flex-direction: column; align-items: center; justify-content: center; padding: 36px 22px; text-align: center; }
+  .login-overlay.hide { display: none; }
+  .login-logo { font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 800; margin-bottom: 6px; }
+  .login-sub { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 30px; }
+  .login-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 300px; padding: 14px; border-radius: 13px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; }
+  .login-btn:active { transform: scale(.97); }
+  .login-status { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 16px; }
+
+  .user-badge { display: flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); cursor: pointer; }
+  .user-badge img { width: 18px; height: 18px; border-radius: 50%; }
+
   /* PAINEL DE STATUS */
   .status-panel { padding: 10px 16px 0; display: flex; flex-direction: column; gap: 8px; }
 
@@ -204,6 +216,7 @@
 <div class="header">
   <div class="header-top">
     <div class="logo" id="logoText">TREINO <span id="logoLetter" style="color:var(--biceps)">A</span></div>
+    <div class="user-badge" id="userBadge" onclick="logout()"></div>
     <div class="date-badge" id="dateDisplay"></div>
   </div>
 
@@ -265,6 +278,13 @@
   </div>
 </div>
 
+<div class="login-overlay hide" id="loginOverlay">
+  <div class="login-logo">TREINO AB</div>
+  <div class="login-sub">Entre para salvar seus treinos na nuvem<br>e acessar de qualquer aparelho.</div>
+  <button class="login-btn" onclick="loginGoogle()">Entrar com Google</button>
+  <div class="login-status" id="loginStatus"></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <div class="timer-banner">
@@ -287,7 +307,91 @@
   <button class="finish-btn-sec" onclick="fecharOverlay()">FECHAR SEM SALVAR</button>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <script>
+// ══════════════════════════════════════════
+// FIREBASE — troque pelos dados do SEU projeto
+// (Firebase Console > Configurações do projeto > Seus apps > SDK setup)
+// ══════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyAVFdjV-rX_IZ9Da6I10p-uTnfIp_a8jk4",
+  authDomain: "gymapp-d3608.firebaseapp.com",
+  projectId: "gymapp-d3608",
+  storageBucket: "gymapp-d3608.firebasestorage.app",
+  messagingSenderId: "711315802669",
+  appId: "1:711315802669:web:c0260fc4159480c0cb06a4",
+  measurementId: "G-2LBDRLRC2B"
+}
+firebase.initializeApp(firebaseConfig)
+const auth = firebase.auth()
+const db = firebase.firestore()
+db.enablePersistence({synchronizeTabs:true}).catch(()=>{})
+
+let uid = null
+let histCache = []
+
+function loginGoogle() {
+  document.getElementById('loginStatus').textContent = 'Conectando...'
+  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
+    .catch(err => { document.getElementById('loginStatus').textContent = 'Erro ao entrar: ' + err.message })
+}
+
+function logout() {
+  if(!confirm('Sair da conta?')) return
+  auth.signOut()
+}
+
+auth.onAuthStateChanged(async user => {
+  const overlay = document.getElementById('loginOverlay')
+  const badge = document.getElementById('userBadge')
+  if(user) {
+    uid = user.uid
+    overlay.classList.add('hide')
+    badge.innerHTML = `<img src="${user.photoURL||''}">${(user.displayName||user.email||'').split(' ')[0]}`
+    await loadHistFromCloud()
+  } else {
+    uid = null
+    overlay.classList.remove('hide')
+    badge.innerHTML = ''
+  }
+})
+
+async function loadHistFromCloud() {
+  try {
+    const doc = await db.collection('users').doc(uid).get()
+    if(doc.exists && doc.data().sessions) {
+      histCache = doc.data().sessions
+      localStorage.setItem('th_ab', JSON.stringify(histCache))
+    } else {
+      // primeiro login: migra o que já existia neste aparelho
+      histCache = loadLocalCache()
+      if(histCache.length) await saveHistToCloud()
+    }
+  } catch(err) {
+    console.error('Falha ao carregar da nuvem, usando cache local.', err)
+    histCache = loadLocalCache()
+  }
+  renderEx(); renderHist(); updateStatus()
+}
+
+function saveHistToCloud() {
+  if(!uid) return Promise.resolve()
+  return db.collection('users').doc(uid).set({ sessions: histCache }, { merge: true })
+    .catch(err => showToast('Não foi possível sincronizar com a nuvem.', 'err'))
+}
+
+function loadLocalCache() {
+  try { return JSON.parse(localStorage.getItem('th_ab')) || [] } catch { return [] }
+}
+
+function persistHist(h) {
+  histCache = h
+  localStorage.setItem('th_ab', JSON.stringify(h))
+  saveHistToCloud()
+}
+
 // ══════════════════════════════════════════
 // DADOS — TREINO A
 // ══════════════════════════════════════════
@@ -536,7 +640,7 @@ function salvarSessao() {
   const h = getHist()
   h.unshift(sessao)
   if(h.length>60) h.pop()
-  localStorage.setItem('th_ab', JSON.stringify(h))
+  persistHist(h)
 }
 
 // ══════════════════════════════════════════
@@ -580,7 +684,7 @@ function updateTimerUI() {
 // ══════════════════════════════════════════
 // HISTÓRICO
 // ══════════════════════════════════════════
-const getHist = () => { try{ return JSON.parse(localStorage.getItem('th_ab'))||[] }catch{ return [] } }
+const getHist = () => histCache
 
 const getPrev = id => {
   for(const s of getHist()) if(s.exercicios?.[id]) return s.exercicios[id]
@@ -627,7 +731,7 @@ function renderHist() {
 
 function delHist(idx) {
   const h=getHist(); h.splice(idx,1)
-  localStorage.setItem('th_ab',JSON.stringify(h))
+  persistHist(h)
   renderHist(); renderEx(); updateStatus()
 }
 
@@ -676,7 +780,7 @@ function importarDados(event) {
       const merged = Array.from(mapa.values())
         .sort((a,b) => new Date(b.data) - new Date(a.data))
 
-      localStorage.setItem('th_ab', JSON.stringify(merged))
+      persistHist(merged)
       renderHist(); updateStatus()
       showToast(`✓ ${novas.length} sessão(ões) importada(s)!`, 'ok')
     } catch {
