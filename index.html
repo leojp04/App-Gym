@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Treino AB</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#111113">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Treino AB">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap');
 
@@ -163,6 +170,12 @@
   .user-badge { display: flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); cursor: pointer; }
   .user-badge img { width: 18px; height: 18px; border-radius: 50%; }
 
+  .sync-status { display: flex; align-items: center; gap: 5px; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); }
+  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .3s; }
+  .sync-status.saving .sync-dot { background: var(--ombro); animation: pulse 1s infinite; }
+  .sync-status.synced .sync-dot { background: var(--green); }
+  .sync-status.error .sync-dot, .sync-status.offline .sync-dot { background: var(--red); }
+
   /* DRAG & DROP IMPORT */
   .drop-overlay { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(17,17,19,0.92); border: 3px dashed var(--green); align-items: center; justify-content: center; flex-direction: column; gap: 10px; pointer-events: none; }
   .drop-overlay.show { display: flex; }
@@ -222,6 +235,7 @@
 <div class="header">
   <div class="header-top">
     <div class="logo" id="logoText">TREINO <span id="logoLetter" style="color:var(--biceps)">A</span></div>
+    <div class="sync-status" id="syncStatus"><div class="sync-dot"></div><span id="syncStatusText"></span></div>
     <div class="user-badge" id="userBadge" onclick="logout()"></div>
     <div class="date-badge" id="dateDisplay"></div>
   </div>
@@ -366,6 +380,8 @@ auth.onAuthStateChanged(async user => {
     uid = null
     overlay.classList.remove('hide')
     badge.innerHTML = ''
+    document.getElementById('syncStatus').className = 'sync-status'
+    document.getElementById('syncStatusText').textContent = ''
   }
 })
 
@@ -387,15 +403,32 @@ async function loadHistFromCloud() {
     histCache = loadLocalCache()
     draft = loadLocalDraft()
   }
+  setSyncStatus(navigator.onLine ? 'synced' : 'offline')
   renderEx(); renderHist(); updateStatus()
   if(draft) restoreDraft(draft)
 }
 
 function saveHistToCloud() {
   if(!uid) return Promise.resolve()
+  setSyncStatus('saving')
   return db.collection('users').doc(uid).set({ sessions: histCache }, { merge: true })
-    .catch(err => showToast('Não foi possível sincronizar com a nuvem.', 'err'))
+    .then(() => setSyncStatus('synced'))
+    .catch(err => { setSyncStatus('error'); showToast('Não foi possível sincronizar com a nuvem.', 'err') })
 }
+
+// ══════════════════════════════════════════
+// INDICADOR DE SINCRONIZAÇÃO
+// ══════════════════════════════════════════
+function setSyncStatus(state) {
+  const el = document.getElementById('syncStatus')
+  const textEl = document.getElementById('syncStatusText')
+  el.className = 'sync-status ' + state
+  const labels = { saving: 'Salvando...', synced: 'Sincronizado', error: 'Erro ao salvar', offline: 'Offline' }
+  textEl.textContent = labels[state] || ''
+}
+
+window.addEventListener('offline', () => setSyncStatus('offline'))
+window.addEventListener('online', () => setSyncStatus(uid ? 'synced' : ''))
 
 function loadLocalCache() {
   try { return JSON.parse(localStorage.getItem('th_ab')) || [] } catch { return [] }
@@ -434,8 +467,12 @@ function saveDraft() {
   const draft = getDraftFromDOM()
   localStorage.setItem('th_ab_draft', JSON.stringify(draft))
   clearTimeout(draftSyncTimeout)
+  if(uid) setSyncStatus('saving')
   draftSyncTimeout = setTimeout(() => {
-    if(uid) db.collection('users').doc(uid).set({ draft }, { merge: true }).catch(()=>{})
+    if(!uid) return
+    db.collection('users').doc(uid).set({ draft }, { merge: true })
+      .then(() => setSyncStatus('synced'))
+      .catch(() => setSyncStatus('error'))
   }, 800)
 }
 
@@ -818,9 +855,11 @@ function renderHist() {
 }
 
 function delHist(idx) {
+  if(!confirm('Excluir esse treino do histórico? Essa ação não pode ser desfeita.')) return
   const h=getHist(); h.splice(idx,1)
   persistHist(h)
   renderHist(); renderEx(); updateStatus()
+  showToast('Treino excluído.', 'ok')
 }
 
 // ══════════════════════════════════════════
@@ -988,6 +1027,10 @@ window.addEventListener('drop', e => {
   const file = e.dataTransfer.files[0]
   processarArquivoImportado(file)
 })
+
+if('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}))
+}
 
 init()
 </script>
