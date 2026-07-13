@@ -353,15 +353,29 @@ firebase.initializeApp(firebaseConfig)
 const auth = firebase.auth()
 const db = firebase.firestore()
 db.enablePersistence({synchronizeTabs:true}).catch(()=>{})
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{})
 
 let uid = null
 let histCache = []
 
+// standalone (PWA instalado) e iOS Safari lidam mal com popup de login —
+// usa redirect, que é bem mais confiável nesses casos
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+
 function loginGoogle() {
   document.getElementById('loginStatus').textContent = 'Conectando...'
-  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
-    .catch(err => { document.getElementById('loginStatus').textContent = 'Erro ao entrar: ' + err.message })
+  const provider = new firebase.auth.GoogleAuthProvider()
+  if(isStandalone) {
+    auth.signInWithRedirect(provider)
+  } else {
+    auth.signInWithPopup(provider)
+      .catch(err => { document.getElementById('loginStatus').textContent = 'Erro ao entrar: ' + err.message })
+  }
 }
+
+auth.getRedirectResult().catch(err => {
+  document.getElementById('loginStatus').textContent = 'Erro ao entrar: ' + err.message
+})
 
 function logout() {
   if(!confirm('Sair da conta?')) return
