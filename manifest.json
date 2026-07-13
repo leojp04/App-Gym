@@ -1,6 +1,6 @@
 {
-  "name": "Treino AB",
-  "short_name": "Treino AB",
+  "name": "Grind",
+  "short_name": "Grind",
   "description": "Acompanhamento de treino A/B com histórico na nuvem",
   "start_url": "/",
   "scope": "/",
