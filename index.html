@@ -638,7 +638,7 @@ function renderEx() {
       seriesHTML += `<div class="serie-row">
         <div class="serie-label">S${s+1}</div>
         <div class="input-group">
-          <input class="serie-input" type="number" inputmode="decimal" step="any"
+          <input class="serie-input" type="text" inputmode="decimal"
             placeholder="${ps?ps.peso:'kg'}" id="p-${ex.id}-${s}" oninput="saveDraft()">
           <div class="input-label">kg</div>
         </div>
@@ -720,7 +720,7 @@ function mostrarFim() {
   lista.forEach(ex => {
     for(let s=0; s<ex.series; s++) {
       totalSeries++
-      const p = parseFloat(document.getElementById(`p-${ex.id}-${s}`)?.value||0)
+      const p = parseFloat((document.getElementById(`p-${ex.id}-${s}`)?.value||'0').replace(',','.'))
       if(p>0){ somaKg+=p; cntKg++ }
     }
   })
@@ -767,7 +767,7 @@ function salvarSessao() {
     const series = []
     for(let s=0; s<ex.series; s++) {
       series.push({
-        peso: document.getElementById(`p-${ex.id}-${s}`)?.value||'0',
+        peso: (document.getElementById(`p-${ex.id}-${s}`)?.value||'0').replace(',','.'),
         reps: document.getElementById(`r-${ex.id}-${s}`)?.value||'0'
       })
     }
