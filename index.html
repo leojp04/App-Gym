@@ -15,13 +15,10 @@
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap');
 
   :root {
-    --bg: #111113; --bg2: #1a1a1e; --card: #222228; --card2: #2a2a32;
-    --border: #333340; --text: #f0eee8; --muted: #666680; --lite: #99968f;
-    --peito: #e85d4e; --costas: #5e9eff; --ombro: #ffb84e;
-    --biceps: #a374ff; --triceps: #4ec9a8;
-    --quad: #f97316; --posterior: #22c55e; --gluteo: #ec4899;
-    --panturrilha: #06b6d4; --core: #eab308;
-    --green: #4ec9a8; --red: #e85d4e;
+    --bg: #0c0c0d; --bg2: #131315; --card: #17171a; --card2: #1f1f23;
+    --border: #2a2a2e; --text: #f3f2ee; --muted: #86868c; --lite: #6f6f76;
+    --accent: #ff5a1f;
+    --green: #4ec9a8; --red: #e8604a;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; padding-bottom: 120px; }
@@ -35,20 +32,16 @@
   /* TREINO A / B SWITCH */
   .treino-switch { display: flex; gap: 6px; margin-bottom: 10px; }
   .treino-btn { flex: 1; padding: 10px 8px; border-radius: 12px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s; text-align: center; }
-  .treino-btn.active { color: var(--text); border-color: var(--border); }
-  .treino-btn.active.a { background: #1e1a2e; border-color: var(--biceps); }
-  .treino-btn.active.b { background: #1a2e1e; border-color: var(--green); }
+  .treino-btn.active { color: var(--text); border-color: #3a3a3e; background: var(--card); }
   .treino-btn-sub { font-family: 'DM Mono', monospace; font-size: 9px; display: block; margin-top: 2px; color: var(--muted); }
-  .treino-btn.active.a .treino-btn-sub { color: var(--biceps); }
-  .treino-btn.active.b .treino-btn-sub { color: var(--green); }
+  .treino-btn.active .treino-btn-sub { color: var(--accent); }
 
 
   /* PROGRESS */
   .progress-wrap { display: flex; align-items: center; gap: 10px; }
   .progress-bg { flex: 1; height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
   .progress-fill { height: 100%; border-radius: 4px; transition: width .4s cubic-bezier(.4,0,.2,1); width: 0%; }
-  .fill-a { background: var(--biceps); }
-  .fill-b { background: var(--green); }
+  .fill-a, .fill-b { background: var(--accent); }
   .progress-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); min-width: 32px; text-align: right; }
 
   /* VIEW TABS */
@@ -59,8 +52,7 @@
   /* CARDS */
   .content { padding: 12px 16px 0; }
   .ex-card { background: var(--card); border-radius: 14px; margin-bottom: 9px; overflow: hidden; border: 1px solid var(--border); transition: opacity .3s, border-color .3s; }
-  .ex-card.done { opacity: 0.38; border-color: var(--green); }
-  .ex-card.done .ex-num { color: var(--green); }
+  .ex-card.done { opacity: 0.4; }
 
   .ex-header { display: flex; align-items: center; gap: 10px; padding: 12px 13px 10px; cursor: pointer; }
   .ex-num { font-family: 'Syne', sans-serif; font-size: 21px; font-weight: 800; min-width: 40px; color: var(--muted); line-height: 1; transition: color .3s; }
@@ -68,11 +60,11 @@
   .ex-info { flex: 1; }
   .ex-nome { font-size: 12.5px; font-weight: 500; line-height: 1.3; margin-bottom: 5px; }
   .ex-tags { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
-  .tag-musc { font-family: 'DM Mono', monospace; font-size: 8.5px; font-weight: 500; padding: 2px 6px; border-radius: 20px; letter-spacing: 0.4px; }
+  .tag-musc { font-family: 'DM Mono', monospace; font-size: 8.5px; font-weight: 500; letter-spacing: 0.4px; color: var(--muted); }
   .tag-series { font-family: 'DM Mono', monospace; font-size: 9.5px; color: var(--lite); }
 
   .check-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--border); background: transparent; color: transparent; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; flex-shrink: 0; font-weight: 700; }
-  .check-btn.checked { background: var(--green); border-color: var(--green); color: var(--bg); }
+  .check-btn.checked { background: var(--accent); border-color: var(--accent); color: var(--bg); }
   .check-btn:active { transform: scale(.88); }
 
   .ex-body { padding: 0 13px 13px; display: none; }
@@ -86,27 +78,27 @@
   .serie-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); min-width: 28px; }
   .input-group { flex: 1; }
   .serie-input { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: 9px; padding: 9px 6px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 13px; outline: none; transition: border-color .2s; text-align: center; }
-  .serie-input:focus { border-color: var(--ombro); }
+  .serie-input:focus { border-color: var(--accent); }
   .serie-input::placeholder { color: var(--lite); font-size: 10px; }
   .input-label { font-family: 'DM Mono', monospace; font-size: 8.5px; color: var(--muted); text-align: center; margin-top: 2px; }
   .serie-sep { font-family: 'DM Mono', monospace; color: var(--muted); font-size: 11px; }
 
   .ajuste-row { display: flex; align-items: center; gap: 9px; margin-top: 9px; }
   .ajuste-label { font-family: 'DM Mono', monospace; font-size: 9.5px; color: var(--muted); min-width: 54px; }
-  .ajuste-input { flex: 1; background: var(--card2); border: 1px solid var(--border); border-radius: 9px; padding: 8px 11px; color: var(--ombro); font-family: 'DM Mono', monospace; font-size: 11px; outline: none; transition: border-color .2s; }
-  .ajuste-input:focus { border-color: var(--ombro); }
+  .ajuste-input { flex: 1; background: var(--card2); border: 1px solid var(--border); border-radius: 9px; padding: 8px 11px; color: var(--accent); font-family: 'DM Mono', monospace; font-size: 11px; outline: none; transition: border-color .2s; }
+  .ajuste-input:focus { border-color: var(--accent); }
   .ajuste-input::placeholder { color: var(--lite); }
 
 
   /* TIMER */
   .timer-banner { position: fixed; bottom: 14px; left: 14px; right: 14px; background: var(--card2); border: 1px solid var(--border); border-radius: 16px; padding: 11px 16px; display: flex; align-items: center; justify-content: space-between; z-index: 200; }
   .timer-display { font-family: 'DM Mono', monospace; font-size: 26px; font-weight: 500; color: var(--text); letter-spacing: -1px; min-width: 60px; transition: color .3s; }
-  .timer-display.running { color: var(--ombro); }
+  .timer-display.running { color: var(--accent); }
   .timer-display.done { color: var(--green); }
   .timer-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); margin-top: 1px; }
   .timer-btns { display: flex; gap: 7px; }
   .timer-btn { padding: 8px 14px; border-radius: 9px; border: none; font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer; transition: all .15s; }
-  .btn-start { background: var(--ombro); color: var(--bg); }
+  .btn-start { background: var(--accent); color: var(--bg); }
   .btn-reset { background: var(--card); color: var(--muted); border: 1px solid var(--border); }
   .btn-start:active, .btn-reset:active { transform: scale(.95); }
 
@@ -114,8 +106,7 @@
   .backup-row { display: flex; gap: 8px; padding: 12px 16px 0; }
   .backup-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 8px; border-radius: 11px; border: 1px solid var(--border); background: var(--card); font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer; transition: all .2s; color: var(--text); }
   .backup-btn:active { transform: scale(.97); opacity: .85; }
-  .backup-btn.export { border-color: var(--biceps); color: var(--biceps); background: #1e1a2e; }
-  .backup-btn.import { border-color: var(--green); color: var(--green); background: #1a2e1e; }
+  .backup-btn.export, .backup-btn.import { border-color: var(--border); color: var(--text); background: var(--card); }
   .backup-btn-icon { font-size: 15px; }
 
   /* TOAST */
@@ -133,9 +124,8 @@
   .hist-date { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
   .hist-badges { display: flex; gap: 5px; margin-top: 3px; }
   .hist-badge { font-family: 'DM Mono', monospace; font-size: 9px; padding: 2px 7px; border-radius: 20px; }
-  .badge-a { background: #1e1a2e; color: var(--biceps); }
-  .badge-b { background: #1a2e1e; color: var(--green); }
-  .badge-dur { background: var(--card2); color: var(--ombro); }
+  .badge-a, .badge-b { background: var(--card2); color: var(--muted); }
+  .badge-dur { background: var(--card2); color: var(--muted); }
   .hist-delete { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--red); background: none; border: none; cursor: pointer; padding: 4px; }
   .hist-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px; }
   .hist-exname { font-size: 10.5px; font-weight: 500; flex: 1; padding-right: 8px; line-height: 1.4; }
@@ -144,7 +134,7 @@
   /* TELA CONCLUSÃO */
   .finish-overlay { display: none; position: fixed; inset: 0; z-index: 300; background: var(--bg); flex-direction: column; align-items: center; justify-content: center; padding: 36px 22px; overflow-y: auto; }
   .finish-overlay.show { display: flex; }
-  .finish-icon { font-size: 64px; margin-bottom: 18px; }
+  .finish-icon { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 40px; color: var(--accent); width: 76px; height: 76px; border: 2px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 22px; }
   .finish-title { font-family: 'Syne', sans-serif; font-size: 34px; font-weight: 800; text-align: center; margin-bottom: 5px; letter-spacing: -1px; line-height: 1.1; }
   .finish-sub { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); text-align: center; margin-bottom: 24px; }
   .finish-stats { width: 100%; background: var(--card); border-radius: 14px; padding: 16px; margin-bottom: 18px; border: 1px solid var(--border); }
@@ -152,7 +142,7 @@
   .fstat:last-child { border-bottom: none; }
   .fstat-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
   .fstat-val { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text); font-weight: 500; }
-  .finish-btn { width: 100%; padding: 17px; border-radius: 13px; border: none; background: var(--text); color: var(--bg); font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer; letter-spacing: 0.5px; margin-bottom: 9px; }
+  .finish-btn { width: 100%; padding: 17px; border-radius: 13px; border: none; background: var(--accent); color: var(--bg); font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer; letter-spacing: 0.5px; margin-bottom: 9px; }
   .finish-btn-sec { width: 100%; padding: 13px; border-radius: 13px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer; }
 
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
@@ -172,15 +162,15 @@
 
   .sync-status { display: flex; align-items: center; gap: 5px; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); }
   .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .3s; }
-  .sync-status.saving .sync-dot { background: var(--ombro); animation: pulse 1s infinite; }
+  .sync-status.saving .sync-dot { background: var(--accent); animation: pulse 1s infinite; }
   .sync-status.synced .sync-dot { background: var(--green); }
   .sync-status.error .sync-dot, .sync-status.offline .sync-dot { background: var(--red); }
 
   /* DRAG & DROP IMPORT */
-  .drop-overlay { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(17,17,19,0.92); border: 3px dashed var(--green); align-items: center; justify-content: center; flex-direction: column; gap: 10px; pointer-events: none; }
+  .drop-overlay { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(12,12,13,0.94); border: 3px dashed var(--accent); align-items: center; justify-content: center; flex-direction: column; gap: 10px; pointer-events: none; }
   .drop-overlay.show { display: flex; }
-  .drop-overlay-icon { font-size: 48px; }
-  .drop-overlay-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: var(--green); }
+  .drop-overlay-icon { font-size: 28px; color: var(--accent); font-family: 'DM Mono', monospace; }
+  .drop-overlay-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: var(--accent); }
 
   /* PAINEL DE STATUS */
   .status-panel { padding: 10px 16px 0; display: flex; flex-direction: column; gap: 8px; }
@@ -189,14 +179,12 @@
     background: var(--card); border: 1px solid var(--border); border-radius: 12px;
     padding: 11px 14px; display: flex; align-items: center; gap: 12px;
   }
-  .status-ultimo-icon { font-size: 20px; }
+  .status-ultimo-icon { font-family: 'DM Mono', monospace; font-weight: 700; font-size: 13px; color: var(--accent); width: 30px; height: 30px; border: 1px solid var(--border); border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .status-ultimo-info { flex: 1; }
   .status-ultimo-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 3px; }
   .status-ultimo-val { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; }
   .status-ultimo-when { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 1px; }
-  .status-next-badge { font-family: 'DM Mono', monospace; font-size: 9px; padding: 3px 9px; border-radius: 20px; background: var(--card2); color: var(--muted); border: 1px solid var(--border); }
-  .status-next-badge.a { color: var(--biceps); border-color: var(--biceps); background: #1e1a2e; }
-  .status-next-badge.b { color: var(--green); border-color: var(--green); background: #1a2e1e; }
+  .status-next-badge { font-family: 'DM Mono', monospace; font-size: 9px; padding: 3px 9px; border-radius: 20px; background: var(--card2); color: var(--accent); border: 1px solid var(--border); }
 
   .status-ciclo {
     background: var(--card); border: 1px solid var(--border); border-radius: 12px;
@@ -206,35 +194,24 @@
   .status-ciclo-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 0.5px; }
   .status-ciclo-count { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; }
   .status-ciclo-count.safe { color: var(--text); }
-  .status-ciclo-count.warn { color: var(--ombro); }
+  .status-ciclo-count.warn { color: var(--accent); }
   .status-ciclo-count.ready { color: var(--red); }
   .ciclo-bar-bg { height: 6px; background: var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 6px; }
   .ciclo-bar-fill { height: 100%; border-radius: 6px; transition: width .5s cubic-bezier(.4,0,.2,1); }
-  .ciclo-bar-fill.safe { background: var(--biceps); }
-  .ciclo-bar-fill.warn { background: var(--ombro); }
+  .ciclo-bar-fill.safe { background: var(--lite); }
+  .ciclo-bar-fill.warn { background: var(--accent); }
   .ciclo-bar-fill.ready { background: var(--red); }
   .ciclo-msg { font-family: 'DM Mono', monospace; font-size: 9.5px; color: var(--muted); line-height: 1.5; }
   .ciclo-msg.ready { color: var(--red); }
 
-  /* tags cores treino A */
-  .tag-musc.peito     { background: var(--peito);   color: #1a0a09; }
-  .tag-musc.costas    { background: var(--costas);  color: #09141f; }
-  .tag-musc.ombro     { background: var(--ombro);   color: #1a1000; }
-  .tag-musc.biceps    { background: var(--biceps);  color: #120a1f; }
-  .tag-musc.triceps   { background: var(--triceps); color: #091a15; }
-  /* tags cores treino B */
-  .tag-musc.quad        { background: var(--quad);        color: #1a0a00; }
-  .tag-musc.posterior   { background: var(--posterior);   color: #0a1a0a; }
-  .tag-musc.gluteo      { background: var(--gluteo);      color: #1a0a10; }
-  .tag-musc.panturrilha { background: var(--panturrilha); color: #001a1a; }
-  .tag-musc.core        { background: var(--core);        color: #1a1500; }
+  #logoLetter { color: var(--accent); }
 </style>
 </head>
 <body>
 
 <div class="header">
   <div class="header-top">
-    <div class="logo" id="logoText">GRIND <span id="logoLetter" style="color:var(--biceps)">A</span></div>
+    <div class="logo" id="logoText">GRIND <span id="logoLetter">A</span></div>
     <div class="sync-status" id="syncStatus"><div class="sync-dot"></div><span id="syncStatusText"></span></div>
     <div class="user-badge" id="userBadge" onclick="logout()"></div>
     <div class="date-badge" id="dateDisplay"></div>
@@ -285,10 +262,10 @@
 <div id="viewHistorico" style="display:none">
   <div class="backup-row">
     <button class="backup-btn export" onclick="exportarDados()">
-      <span class="backup-btn-icon">⬆️</span> EXPORTAR
+      <span class="backup-btn-icon">↑</span> EXPORTAR
     </button>
     <button class="backup-btn import" onclick="document.getElementById('importInput').click()">
-      <span class="backup-btn-icon">⬇️</span> IMPORTAR
+      <span class="backup-btn-icon">↓</span> IMPORTAR
     </button>
     <input type="file" id="importInput" accept=".json" style="display:none" onchange="importarDados(event)">
   </div>
@@ -306,7 +283,7 @@
 </div>
 
 <div class="drop-overlay" id="dropOverlay">
-  <div class="drop-overlay-icon">📥</div>
+  <div class="drop-overlay-icon">↓</div>
   <div class="drop-overlay-text">Solte o arquivo para importar</div>
 </div>
 
@@ -324,7 +301,7 @@
 </div>
 
 <div class="finish-overlay" id="finishOverlay">
-  <div class="finish-icon">💪</div>
+  <div class="finish-icon">✓</div>
   <div class="finish-title" id="finishTitle">TREINO<br>CONCLUÍDO</div>
   <div class="finish-sub" id="finishDate"></div>
   <div class="finish-stats" id="finishStats"></div>
@@ -418,8 +395,14 @@ async function loadHistFromCloud() {
     draft = loadLocalDraft()
   }
   setSyncStatus(navigator.onLine ? 'synced' : 'offline')
-  renderEx(); renderHist(); updateStatus()
-  if(draft) restoreDraft(draft)
+  if(draft) {
+    restoreDraft(draft)
+  } else {
+    treinoAtual = getNextTreino()
+    applyTreinoUI(treinoAtual)
+    renderEx()
+  }
+  renderHist(); updateStatus()
 }
 
 function saveHistToCloud() {
@@ -506,12 +489,7 @@ function restoreDraft(draft) {
   concluidos = new Set(draft.concluidos || [])
   inicio = draft.inicio || Date.now()
 
-  document.querySelectorAll('.treino-btn').forEach(b => b.classList.remove('active'))
-  document.querySelector(`.treino-btn.${treinoAtual.toLowerCase()}`).classList.add('active')
-  document.getElementById('logoLetter').textContent = treinoAtual
-  document.getElementById('logoLetter').style.color = treinoAtual==='A' ? 'var(--biceps)' : 'var(--green)'
-  document.getElementById('progressFill').className = `progress-fill fill-${treinoAtual.toLowerCase()}`
-
+  applyTreinoUI(treinoAtual)
   renderEx()
 
   Object.entries(draft.values || {}).forEach(([id, val]) => {
@@ -574,20 +552,33 @@ function init() {
   document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('pt-BR',{
     weekday:'short', day:'2-digit', month:'short'
   }).toUpperCase()
+  histCache = loadLocalCache()
+  treinoAtual = getNextTreino()
+  applyTreinoUI(treinoAtual)
   renderEx(); renderHist(); updateStatus()
 }
 
 // ══════════════════════════════════════════
 // TROCA DE TREINO A / B
 // ══════════════════════════════════════════
-function setTreino(t) {
-  treinoAtual = t
-  concluidos.clear(); inicio = Date.now()
+function applyTreinoUI(t) {
   document.querySelectorAll('.treino-btn').forEach(b => b.classList.remove('active'))
   document.querySelector(`.treino-btn.${t.toLowerCase()}`).classList.add('active')
   document.getElementById('logoLetter').textContent = t
-  document.getElementById('logoLetter').style.color = t==='A' ? 'var(--biceps)' : 'var(--green)'
   document.getElementById('progressFill').className = `progress-fill fill-${t.toLowerCase()}`
+}
+
+// sugere automaticamente o próximo treino (oposto do último feito)
+function getNextTreino() {
+  const h = getHist()
+  if(!h.length) return 'A'
+  return h[0].treino === 'A' ? 'B' : 'A'
+}
+
+function setTreino(t) {
+  treinoAtual = t
+  concluidos.clear(); inicio = Date.now()
+  applyTreinoUI(t)
   renderEx(); updateProgress()
   saveDraft()
 }
@@ -627,7 +618,7 @@ function renderEx() {
       const ps = prev.series.map((s,i)=>`S${i+1}: ${s.peso}kg×${s.reps}`).join('  ·  ')
       prevHTML = `<div class="prev-info">
         <div class="prev-title">ÚLTIMA SESSÃO</div>
-        <div>${ps}${prev.ajuste?'  ·  <span style="color:var(--ombro)">Aj: '+prev.ajuste+'</span>':''}</div>
+        <div>${ps}${prev.ajuste?'  ·  <span style="color:var(--accent)">Aj: '+prev.ajuste+'</span>':''}</div>
       </div>`
     }
 
@@ -845,7 +836,7 @@ function renderHist() {
     lista.forEach(ex=>{
       const data=s.exercicios?.[ex.id]; if(!data) return
       const ps = data.series.map(sr=>`${sr.peso}kg×${sr.reps}`).join(' · ')
-      const aj = data.ajuste?` · <span style="color:var(--ombro)">Aj:${data.ajuste}</span>`:''
+      const aj = data.ajuste?` · <span style="color:var(--accent)">Aj:${data.ajuste}</span>`:''
       rows+=`<div class="hist-row">
         <div class="hist-exname">${ex.num}. ${ex.nome}</div>
         <div class="hist-series">${ps}${aj}</div>
@@ -978,9 +969,9 @@ function updateStatus() {
                 : d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'})
 
     const modoLabel = ''
-    iconEl.textContent = t==='A' ? '💪' : '🦵'
+    iconEl.textContent = t
     valEl.textContent  = `TREINO ${t}${modoLabel}`
-    valEl.style.color  = t==='A' ? 'var(--biceps)' : 'var(--green)'
+    valEl.style.color  = 'var(--text)'
     whenEl.textContent = quando + (ultimo.duracao ? ` · ${ultimo.duracao} min` : '')
 
     const proximo = t==='A' ? 'B' : 'A'
