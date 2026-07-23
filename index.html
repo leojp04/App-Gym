@@ -97,6 +97,10 @@
   .edit-toggle-btn { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.4px; cursor: pointer; }
   .edit-toggle-btn.active { color: var(--accent); border-color: var(--accent); }
   .edit-toggle-btn:active { transform: scale(.98); }
+  .edit-toggle-row-split { display: flex; gap: 8px; }
+  .edit-toggle-row-split .edit-toggle-btn { flex: 1; }
+  .edit-cancel-btn { color: var(--red); border-color: var(--red); }
+  .edit-save-btn { color: var(--bg); background: var(--accent); border-color: var(--accent); font-weight: 700; }
 
   .edit-card { padding: 13px; display: flex; flex-direction: column; gap: 8px; }
   .edit-input { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: 9px; padding: 9px 11px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 12.5px; outline: none; }
@@ -104,8 +108,10 @@
   .edit-row-2 { display: flex; gap: 7px; }
   .edit-row-2 .edit-input.sm { font-family: 'DM Mono', monospace; font-size: 11px; text-align: center; }
   .edit-check-row { display: flex; align-items: center; gap: 8px; font-family: 'DM Mono', monospace; font-size: 10.5px; color: var(--muted); }
-  .edit-actions { display: flex; gap: 7px; margin-top: 2px; }
-  .edit-move-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; cursor: pointer; }
+  .edit-actions { display: flex; align-items: center; gap: 9px; margin-top: 2px; padding-top: 9px; border-top: 1px solid var(--border); }
+  .edit-reorder-group { display: flex; align-items: center; gap: 5px; }
+  .edit-reorder-label { font-family: 'DM Mono', monospace; font-size: 8.5px; color: var(--muted); letter-spacing: 0.4px; margin-right: 2px; }
+  .edit-move-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10.5px; cursor: pointer; }
   .edit-move-btn:disabled { opacity: .3; }
   .edit-del-btn { flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--red); background: transparent; color: var(--red); font-family: 'DM Mono', monospace; font-size: 10.5px; cursor: pointer; }
   .add-ex-btn { width: 100%; padding: 13px; border-radius: 12px; border: 1px dashed var(--border); background: transparent; color: var(--accent); font-family: 'DM Mono', monospace; font-size: 11.5px; letter-spacing: 0.4px; cursor: pointer; margin-bottom: 9px; }
@@ -302,7 +308,7 @@
 </div>
 
 <div id="viewTreino">
-  <div class="edit-toggle-row"><button class="edit-toggle-btn" id="editToggleBtn" onclick="toggleEditMode()">✎ EDITAR EXERCÍCIOS</button></div>
+  <div class="edit-toggle-row" id="editToggleRow"></div>
   <div class="content" id="exList"></div>
 </div>
 <div id="viewHistorico" style="display:none">
@@ -712,6 +718,7 @@ function init() {
   histCache = loadLocalCache()
   draftsCache = loadLocalDrafts()
   exerciciosCache = loadLocalExercicios() || seedDefaultExercicios()
+  renderEditToggleRow()
   applyDraftsOnLoad()
   renderHist(); updateStatus()
 }
@@ -735,6 +742,7 @@ function getNextTreino() {
 
 function setTreino(t) {
   if(t === treinoAtual) return
+  if(editMode) { showToast('Termine ou cancele a edição antes de trocar de treino.', 'err'); return }
   switchToTreino(t, draftsCache[t])
 }
 
@@ -845,17 +853,53 @@ function escapeHtml(str) {
   return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
 }
 
-function toggleEditMode() {
-  editMode = !editMode
-  const btn = document.getElementById('editToggleBtn')
-  btn.textContent = editMode ? '✓ CONCLUIR EDIÇÃO' : '✎ EDITAR EXERCÍCIOS'
-  btn.classList.toggle('active', editMode)
+// edits happen on a scratch copy (editDraft) and only land in
+// exerciciosCache — and get persisted — when SALVAR is pressed
+let editDraft = null
+
+function renderEditToggleRow() {
+  const row = document.getElementById('editToggleRow')
+  if(editMode) {
+    row.innerHTML = `
+      <div class="edit-toggle-row-split">
+        <button class="edit-toggle-btn edit-cancel-btn" onclick="cancelEditMode()">✕ CANCELAR</button>
+        <button class="edit-toggle-btn edit-save-btn" onclick="saveEditMode()">✓ SALVAR ALTERAÇÕES</button>
+      </div>`
+  } else {
+    row.innerHTML = `<button class="edit-toggle-btn" id="editToggleBtn" onclick="enterEditMode()">✎ EDITAR EXERCÍCIOS</button>`
+  }
+}
+
+function enterEditMode() {
+  editMode = true
+  editDraft = JSON.parse(JSON.stringify(getLista()))
+  renderEditToggleRow()
   renderEx()
-  if(!editMode) { updateProgress(); updateStatus(); renderHist() }
+}
+
+function cancelEditMode() {
+  if(editDraft && JSON.stringify(editDraft) !== JSON.stringify(getLista())) {
+    if(!confirm('Descartar as alterações feitas nesse treino?')) return
+  }
+  editMode = false
+  editDraft = null
+  renderEditToggleRow()
+  renderEx()
+}
+
+function saveEditMode() {
+  exerciciosCache[treinoAtual] = editDraft
+  persistExercicios()
+  editMode = false
+  editDraft = null
+  renderEditToggleRow()
+  renderEx()
+  updateProgress(); updateStatus(); renderHist()
+  showToast('✓ Treino atualizado!', 'ok')
 }
 
 function renderExEdit() {
-  const lista = getLista()
+  const lista = editDraft
   const ul = document.getElementById('exList')
   ul.innerHTML = ''
 
@@ -873,8 +917,11 @@ function renderExEdit() {
         <input type="checkbox" ${ex.ajuste?'checked':''} onchange="updateExField('${ex.id}','ajuste',this.checked)"> Tem ajuste de máquina (pino/assento)
       </label>
       <div class="edit-actions">
-        <button class="edit-move-btn" onclick="moveEx('${ex.id}',-1)" ${idx===0?'disabled':''}>↑</button>
-        <button class="edit-move-btn" onclick="moveEx('${ex.id}',1)" ${idx===lista.length-1?'disabled':''}>↓</button>
+        <div class="edit-reorder-group">
+          <span class="edit-reorder-label">ORDEM</span>
+          <button class="edit-move-btn" title="Mover para cima" onclick="moveEx('${ex.id}',-1)" ${idx===0?'disabled':''}>↑ SUBIR</button>
+          <button class="edit-move-btn" title="Mover para baixo" onclick="moveEx('${ex.id}',1)" ${idx===lista.length-1?'disabled':''}>↓ DESCER</button>
+        </div>
         <button class="edit-del-btn" onclick="removeEx('${ex.id}')">EXCLUIR</button>
       </div>`
     ul.appendChild(card)
@@ -887,17 +934,8 @@ function renderExEdit() {
   ul.appendChild(addBtn)
 }
 
-function ensureOwnExList() {
-  // clone the default list on first edit so we never mutate DEFAULT_EX_A/B in place
-  if(!exerciciosCache[treinoAtual]) {
-    exerciciosCache[treinoAtual] = JSON.parse(JSON.stringify(getLista()))
-  }
-  return exerciciosCache[treinoAtual]
-}
-
 function updateExField(id, field, value) {
-  const lista = ensureOwnExList()
-  const ex = lista.find(e => e.id === id)
+  const ex = editDraft.find(e => e.id === id)
   if(!ex) return
   if(field === 'series') {
     const n = parseInt(value, 10)
@@ -907,33 +945,26 @@ function updateExField(id, field, value) {
   } else {
     ex[field] = value
   }
-  persistExercicios()
   renderExEdit()
 }
 
 function addEx() {
-  const lista = ensureOwnExList()
   const id = 'ex_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
-  lista.push({ id, nome: 'NOVO EXERCÍCIO', musc: 'geral', series: 3, reps: '10-12', ajuste: false })
-  persistExercicios()
+  editDraft.push({ id, nome: 'NOVO EXERCÍCIO', musc: 'geral', series: 3, reps: '10-12', ajuste: false })
   renderExEdit()
 }
 
 function removeEx(id) {
   if(!confirm('Remover esse exercício do treino ' + treinoAtual + '?')) return
-  const lista = ensureOwnExList()
-  exerciciosCache[treinoAtual] = lista.filter(e => e.id !== id)
-  persistExercicios()
+  editDraft = editDraft.filter(e => e.id !== id)
   renderExEdit()
 }
 
 function moveEx(id, dir) {
-  const lista = ensureOwnExList()
-  const idx = lista.findIndex(e => e.id === id)
+  const idx = editDraft.findIndex(e => e.id === id)
   const swapIdx = idx + dir
-  if(swapIdx < 0 || swapIdx >= lista.length) return
-  ;[lista[idx], lista[swapIdx]] = [lista[swapIdx], lista[idx]]
-  persistExercicios()
+  if(swapIdx < 0 || swapIdx >= editDraft.length) return
+  ;[editDraft[idx], editDraft[swapIdx]] = [editDraft[swapIdx], editDraft[idx]]
   renderExEdit()
 }
 
