@@ -92,6 +92,25 @@
   .chart-trigger { margin-top: 10px; width: 100%; background: transparent; border: 1px solid var(--border); border-radius: 9px; padding: 9px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.4px; color: var(--muted); cursor: pointer; }
   .chart-trigger:active { transform: scale(.97); }
 
+  /* exercise editing */
+  .edit-toggle-row { padding: 0 16px 10px; }
+  .edit-toggle-btn { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.4px; cursor: pointer; }
+  .edit-toggle-btn.active { color: var(--accent); border-color: var(--accent); }
+  .edit-toggle-btn:active { transform: scale(.98); }
+
+  .edit-card { padding: 13px; display: flex; flex-direction: column; gap: 8px; }
+  .edit-input { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: 9px; padding: 9px 11px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 12.5px; outline: none; }
+  .edit-input:focus { border-color: var(--accent); }
+  .edit-row-2 { display: flex; gap: 7px; }
+  .edit-row-2 .edit-input.sm { font-family: 'DM Mono', monospace; font-size: 11px; text-align: center; }
+  .edit-check-row { display: flex; align-items: center; gap: 8px; font-family: 'DM Mono', monospace; font-size: 10.5px; color: var(--muted); }
+  .edit-actions { display: flex; gap: 7px; margin-top: 2px; }
+  .edit-move-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; cursor: pointer; }
+  .edit-move-btn:disabled { opacity: .3; }
+  .edit-del-btn { flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--red); background: transparent; color: var(--red); font-family: 'DM Mono', monospace; font-size: 10.5px; cursor: pointer; }
+  .add-ex-btn { width: 100%; padding: 13px; border-radius: 12px; border: 1px dashed var(--border); background: transparent; color: var(--accent); font-family: 'DM Mono', monospace; font-size: 11.5px; letter-spacing: 0.4px; cursor: pointer; margin-bottom: 9px; }
+  .add-ex-btn:active { transform: scale(.98); }
+
   /* progress chart */
   .chart-overlay { display: none; position: fixed; inset: 0; z-index: 850; background: rgba(12,12,13,0.92); align-items: center; justify-content: center; padding: 20px; }
   .chart-overlay.show { display: flex; }
@@ -282,7 +301,10 @@
   </div>
 </div>
 
-<div id="viewTreino"><div class="content" id="exList"></div></div>
+<div id="viewTreino">
+  <div class="edit-toggle-row"><button class="edit-toggle-btn" id="editToggleBtn" onclick="toggleEditMode()">✎ EDITAR EXERCÍCIOS</button></div>
+  <div class="content" id="exList"></div>
+</div>
 <div id="viewHistorico" style="display:none">
   <div class="backup-row">
     <button class="backup-btn export" onclick="exportarDados()">
@@ -420,6 +442,7 @@ auth.onAuthStateChanged(async user => {
 })
 
 async function loadHistFromCloud() {
+  let needsExSeed = false
   try {
     const doc = await db.collection('users').doc(uid).get()
     if(doc.exists && doc.data().sessions) {
@@ -431,11 +454,21 @@ async function loadHistFromCloud() {
       if(histCache.length) await saveHistToCloud()
     }
     draftsCache = (doc.exists && doc.data().drafts) || loadLocalDrafts()
+
+    if(doc.exists && doc.data().exercicios) {
+      exerciciosCache = doc.data().exercicios
+      localStorage.setItem('th_ab_exercicios', JSON.stringify(exerciciosCache))
+    } else {
+      exerciciosCache = loadLocalExercicios() || seedDefaultExercicios()
+      needsExSeed = true
+    }
   } catch(err) {
     console.error('Falha ao carregar da nuvem, usando cache local.', err)
     histCache = loadLocalCache()
     draftsCache = loadLocalDrafts()
+    exerciciosCache = loadLocalExercicios() || seedDefaultExercicios()
   }
+  if(needsExSeed) persistExercicios()
   setSyncStatus(navigator.onLine ? 'synced' : 'offline')
   applyDraftsOnLoad()
   renderHist(); updateStatus()
@@ -617,30 +650,46 @@ document.addEventListener('visibilitychange', () => {
 })
 
 // ══════════════════════════════════════════
-// workout A exercises
+// default workout A/B exercises — used to seed a brand-new account,
+// after that each user's own list lives in exerciciosCache
 // ══════════════════════════════════════════
-const EX_A = [
-  { id:'supino',   num:'1', nome:'SUPINO MAQUINA INCLINADO',   musc:'peito',   series:4, reps:'8-10',  ajuste:true  },
-  { id:'puxada',   num:'2', nome:'PUXADA POLIA BARRA ABERTO',  musc:'costas',  series:4, reps:'8-10',  ajuste:true  },
-  { id:'desenv',   num:'3', nome:'DESENVOLVIMENTO MAQUINA',     musc:'ombro',   series:3, reps:'8-10',  ajuste:true  },
-  { id:'elevacao', num:'4', nome:'ELEVACAO LATERAL',            musc:'ombro',   series:3, reps:'12-15', ajuste:false },
-  { id:'facepull', num:'5', nome:'FACE PULL',                   musc:'ombro',   series:3, reps:'12-15', ajuste:true  },
-  { id:'rosca',    num:'6', nome:'ROSCA DIRETA BARRA W',        musc:'biceps',  series:3, reps:'10-12', ajuste:false },
-  { id:'triceps',  num:'7', nome:'TRICEPS FRANCES POLIA CORDA', musc:'triceps', series:3, reps:'10-12', ajuste:true  },
+const DEFAULT_EX_A = [
+  { id:'supino',   nome:'SUPINO MAQUINA INCLINADO',   musc:'peito',   series:4, reps:'8-10',  ajuste:true  },
+  { id:'puxada',   nome:'PUXADA POLIA BARRA ABERTO',  musc:'costas',  series:4, reps:'8-10',  ajuste:true  },
+  { id:'desenv',   nome:'DESENVOLVIMENTO MAQUINA',     musc:'ombro',   series:3, reps:'8-10',  ajuste:true  },
+  { id:'elevacao', nome:'ELEVACAO LATERAL',            musc:'ombro',   series:3, reps:'12-15', ajuste:false },
+  { id:'facepull', nome:'FACE PULL',                   musc:'ombro',   series:3, reps:'12-15', ajuste:true  },
+  { id:'rosca',    nome:'ROSCA DIRETA BARRA W',        musc:'biceps',  series:3, reps:'10-12', ajuste:false },
+  { id:'triceps',  nome:'TRICEPS FRANCES POLIA CORDA', musc:'triceps', series:3, reps:'10-12', ajuste:true  },
+]
+
+const DEFAULT_EX_B = [
+  { id:'agach',     nome:'AGACHAMENTO MAQUINA',        musc:'quad',        series:4, reps:'8-10',  ajuste:true  },
+  { id:'legpress',  nome:'LEG PRESS',                   musc:'quad',        series:3, reps:'10-12', ajuste:true  },
+  { id:'hipthrust', nome:'HIP THRUST',                  musc:'gluteo',      series:4, reps:'10-12', ajuste:true  },
+  { id:'stiff',     nome:'STIFF HALTERES',              musc:'posterior',   series:4, reps:'10-12', ajuste:false },
+  { id:'flexora',   nome:'CADEIRA FLEXORA',             musc:'posterior',   series:3, reps:'12-15', ajuste:true  },
+  { id:'soleo',     nome:'PANTURRILHA SENTADO (SOLEO)', musc:'panturrilha', series:3, reps:'15-20', ajuste:true  },
+  { id:'abdmaq',    nome:'ABDOMINAL MAQUINA',           musc:'core',        series:3, reps:'15',    ajuste:true  },
 ]
 
 // ══════════════════════════════════════════
-// workout B exercises
+// per-user exercise lists — editable, seeded from the defaults above
 // ══════════════════════════════════════════
-const EX_B = [
-  { id:'agach',     num:'1', nome:'AGACHAMENTO MAQUINA',        musc:'quad',        series:4, reps:'8-10',  ajuste:true  },
-  { id:'legpress',  num:'2', nome:'LEG PRESS',                   musc:'quad',        series:3, reps:'10-12', ajuste:true  },
-  { id:'hipthrust', num:'3', nome:'HIP THRUST',                  musc:'gluteo',      series:4, reps:'10-12', ajuste:true  },
-  { id:'stiff',     num:'4', nome:'STIFF HALTERES',              musc:'posterior',   series:4, reps:'10-12', ajuste:false },
-  { id:'flexora',   num:'5', nome:'CADEIRA FLEXORA',             musc:'posterior',   series:3, reps:'12-15', ajuste:true  },
-  { id:'soleo',     num:'6', nome:'PANTURRILHA SENTADO (SOLEO)', musc:'panturrilha', series:3, reps:'15-20', ajuste:true  },
-  { id:'abdmaq',    num:'7', nome:'ABDOMINAL MAQUINA',           musc:'core',        series:3, reps:'15',    ajuste:true  },
-]
+let exerciciosCache = { A: null, B: null }
+
+function seedDefaultExercicios() {
+  return { A: JSON.parse(JSON.stringify(DEFAULT_EX_A)), B: JSON.parse(JSON.stringify(DEFAULT_EX_B)) }
+}
+
+function loadLocalExercicios() {
+  try { return JSON.parse(localStorage.getItem('th_ab_exercicios')) || null } catch { return null }
+}
+
+function persistExercicios() {
+  localStorage.setItem('th_ab_exercicios', JSON.stringify(exerciciosCache))
+  if(uid) db.collection('users').doc(uid).set({ exercicios: exerciciosCache }, { merge: true }).catch(()=>{})
+}
 
 // ══════════════════════════════════════════
 // state
@@ -649,8 +698,9 @@ let treinoAtual = 'A'
 let concluidos = new Set()
 let inicio = Date.now()
 let timerSecs = 75, timerRunning = false, timerIv = null
+let editMode = false
 
-const getLista = () => treinoAtual === 'B' ? EX_B : EX_A
+const getLista = () => exerciciosCache[treinoAtual] || (treinoAtual === 'B' ? DEFAULT_EX_B : DEFAULT_EX_A)
 
 // ══════════════════════════════════════════
 // INIT
@@ -661,6 +711,7 @@ function init() {
   }).toUpperCase()
   histCache = loadLocalCache()
   draftsCache = loadLocalDrafts()
+  exerciciosCache = loadLocalExercicios() || seedDefaultExercicios()
   applyDraftsOnLoad()
   renderHist(); updateStatus()
 }
@@ -703,14 +754,20 @@ function setView(v) {
 // render exercise list
 // ══════════════════════════════════════════
 function renderEx() {
+  if(editMode) { renderExEdit(); return }
+  renderExView()
+}
+
+function renderExView() {
   const lista = getLista()
   const ul = document.getElementById('exList')
   ul.innerHTML = ''
 
-  lista.forEach(ex => {
+  lista.forEach((ex, idx) => {
+    const numDisplay = String(idx + 1)
     const prev = getPrev(ex.id)
     const done = concluidos.has(ex.id)
-    const sm = ex.num.length > 1
+    const sm = numDisplay.length > 1
 
     const card = document.createElement('div')
     card.className = 'ex-card' + (done?' done':'')
@@ -754,7 +811,7 @@ function renderEx() {
 
     card.innerHTML = `
       <div class="ex-header" onclick="toggleBody('${ex.id}')">
-        <div class="ex-num ${sm?'sm':''}">${ex.num}</div>
+        <div class="ex-num ${sm?'sm':''}">${numDisplay}</div>
         <div class="ex-info">
           <div class="ex-nome">${ex.nome}</div>
           <div class="ex-tags">
@@ -782,6 +839,105 @@ function toggleBody(id) {
 }
 
 // ══════════════════════════════════════════
+// editing exercises (per user, per split)
+// ══════════════════════════════════════════
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
+}
+
+function toggleEditMode() {
+  editMode = !editMode
+  const btn = document.getElementById('editToggleBtn')
+  btn.textContent = editMode ? '✓ CONCLUIR EDIÇÃO' : '✎ EDITAR EXERCÍCIOS'
+  btn.classList.toggle('active', editMode)
+  renderEx()
+  if(!editMode) { updateProgress(); updateStatus(); renderHist() }
+}
+
+function renderExEdit() {
+  const lista = getLista()
+  const ul = document.getElementById('exList')
+  ul.innerHTML = ''
+
+  lista.forEach((ex, idx) => {
+    const card = document.createElement('div')
+    card.className = 'ex-card edit-card'
+    card.innerHTML = `
+      <input class="edit-input" type="text" value="${escapeHtml(ex.nome)}" placeholder="Nome do exercício" onchange="updateExField('${ex.id}','nome',this.value)">
+      <div class="edit-row-2">
+        <input class="edit-input sm" type="text" value="${escapeHtml(ex.musc)}" placeholder="grupo" onchange="updateExField('${ex.id}','musc',this.value)">
+        <input class="edit-input sm" type="number" min="1" max="10" value="${ex.series}" placeholder="séries" onchange="updateExField('${ex.id}','series',this.value)">
+        <input class="edit-input sm" type="text" value="${escapeHtml(ex.reps)}" placeholder="reps" onchange="updateExField('${ex.id}','reps',this.value)">
+      </div>
+      <label class="edit-check-row">
+        <input type="checkbox" ${ex.ajuste?'checked':''} onchange="updateExField('${ex.id}','ajuste',this.checked)"> Tem ajuste de máquina (pino/assento)
+      </label>
+      <div class="edit-actions">
+        <button class="edit-move-btn" onclick="moveEx('${ex.id}',-1)" ${idx===0?'disabled':''}>↑</button>
+        <button class="edit-move-btn" onclick="moveEx('${ex.id}',1)" ${idx===lista.length-1?'disabled':''}>↓</button>
+        <button class="edit-del-btn" onclick="removeEx('${ex.id}')">EXCLUIR</button>
+      </div>`
+    ul.appendChild(card)
+  })
+
+  const addBtn = document.createElement('button')
+  addBtn.className = 'add-ex-btn'
+  addBtn.textContent = '+ ADICIONAR EXERCÍCIO'
+  addBtn.onclick = addEx
+  ul.appendChild(addBtn)
+}
+
+function ensureOwnExList() {
+  // clone the default list on first edit so we never mutate DEFAULT_EX_A/B in place
+  if(!exerciciosCache[treinoAtual]) {
+    exerciciosCache[treinoAtual] = JSON.parse(JSON.stringify(getLista()))
+  }
+  return exerciciosCache[treinoAtual]
+}
+
+function updateExField(id, field, value) {
+  const lista = ensureOwnExList()
+  const ex = lista.find(e => e.id === id)
+  if(!ex) return
+  if(field === 'series') {
+    const n = parseInt(value, 10)
+    ex.series = (n >= 1 && n <= 10) ? n : ex.series
+  } else if(field === 'nome') {
+    ex.nome = value.trim() ? value.trim().toUpperCase() : ex.nome
+  } else {
+    ex[field] = value
+  }
+  persistExercicios()
+  renderExEdit()
+}
+
+function addEx() {
+  const lista = ensureOwnExList()
+  const id = 'ex_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+  lista.push({ id, nome: 'NOVO EXERCÍCIO', musc: 'geral', series: 3, reps: '10-12', ajuste: false })
+  persistExercicios()
+  renderExEdit()
+}
+
+function removeEx(id) {
+  if(!confirm('Remover esse exercício do treino ' + treinoAtual + '?')) return
+  const lista = ensureOwnExList()
+  exerciciosCache[treinoAtual] = lista.filter(e => e.id !== id)
+  persistExercicios()
+  renderExEdit()
+}
+
+function moveEx(id, dir) {
+  const lista = ensureOwnExList()
+  const idx = lista.findIndex(e => e.id === id)
+  const swapIdx = idx + dir
+  if(swapIdx < 0 || swapIdx >= lista.length) return
+  ;[lista[idx], lista[swapIdx]] = [lista[swapIdx], lista[idx]]
+  persistExercicios()
+  renderExEdit()
+}
+
+// ══════════════════════════════════════════
 // checking off exercises
 // ══════════════════════════════════════════
 function toggleDone(id) {
@@ -797,12 +953,12 @@ function toggleDone(id) {
   btn.textContent = concluidos.has(id) ? '✓' : ''
   updateProgress()
   saveDraft()
-  if(concluidos.size === getLista().length) setTimeout(mostrarFim, 400)
+  if(getLista().length && concluidos.size === getLista().length) setTimeout(mostrarFim, 400)
 }
 
 function updateProgress() {
   const total = getLista().length, done = concluidos.size
-  document.getElementById('progressFill').style.width = (done/total*100)+'%'
+  document.getElementById('progressFill').style.width = (total?done/total*100:0)+'%'
   document.getElementById('progressLabel').textContent = `${done}/${total}`
 }
 
@@ -997,17 +1153,22 @@ function renderHist() {
   el.innerHTML=''
   h.forEach((s,idx)=>{
     const d = new Date(s.data)
-    const lista = s.treino==='B' ? EX_B :
-      EX_A
+    // look up names in this split's *current* list; fall back to the raw id
+    // if the exercise was since renamed/removed, so old sessions still render
+    const lista = (exerciciosCache[s.treino] && exerciciosCache[s.treino].length)
+      ? exerciciosCache[s.treino]
+      : (s.treino==='B' ? DEFAULT_EX_B : DEFAULT_EX_A)
     const badgeClass = s.treino==='A' ? 'badge-a' : 'badge-b'
     const modoLabel = s.treino==='A' ? 'SUPERIOR' : 'INFERIOR'
     let rows=''
-    lista.forEach(ex=>{
-      const data=s.exercicios?.[ex.id]; if(!data) return
+    Object.keys(s.exercicios||{}).forEach(exId=>{
+      const data=s.exercicios[exId]; if(!data) return
+      const exIdx = lista.findIndex(e=>e.id===exId)
+      const nome = exIdx>=0 ? `${exIdx+1}. ${lista[exIdx].nome}` : exId
       const ps = data.series.map(sr=>`${sr.peso}kg×${sr.reps}`).join(' · ')
       const aj = data.ajuste?` · <span style="color:var(--accent)">Aj:${data.ajuste}</span>`:''
       rows+=`<div class="hist-row">
-        <div class="hist-exname">${ex.num}. ${ex.nome}</div>
+        <div class="hist-exname">${nome}</div>
         <div class="hist-series">${ps}${aj}</div>
       </div>`
     })
