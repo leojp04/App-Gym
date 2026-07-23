@@ -157,6 +157,15 @@
   .login-btn:active { transform: scale(.97); }
   .login-status { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 16px; }
 
+  /* LEMBRETE DE TREINO NÃO FINALIZADO */
+  .reminder-overlay { display: none; position: fixed; inset: 0; z-index: 900; background: rgba(12,12,13,0.96); flex-direction: column; align-items: center; justify-content: center; padding: 36px 26px; text-align: center; }
+  .reminder-overlay.show { display: flex; }
+  .reminder-icon { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--accent); color: var(--accent); font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
+  .reminder-title { font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 8px; }
+  .reminder-sub { font-family: 'DM Mono', monospace; font-size: 11.5px; color: var(--muted); line-height: 1.6; margin-bottom: 26px; max-width: 300px; }
+  .reminder-btn { width: 100%; max-width: 300px; padding: 15px; border-radius: 13px; border: none; background: var(--accent); color: var(--bg); font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 800; cursor: pointer; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .reminder-btn-sec { width: 100%; max-width: 300px; padding: 12px; border-radius: 13px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10.5px; cursor: pointer; }
+
   .user-badge { display: flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); cursor: pointer; }
   .user-badge img { width: 18px; height: 18px; border-radius: 50%; }
 
@@ -285,6 +294,14 @@
 <div class="drop-overlay" id="dropOverlay">
   <div class="drop-overlay-icon">↓</div>
   <div class="drop-overlay-text">Solte o arquivo para importar</div>
+</div>
+
+<div class="reminder-overlay" id="reminderOverlay">
+  <div class="reminder-icon">!</div>
+  <div class="reminder-title">TREINO NÃO FINALIZADO</div>
+  <div class="reminder-sub" id="reminderSub"></div>
+  <button class="reminder-btn" onclick="closeReminder()">CONTINUAR TREINO</button>
+  <button class="reminder-btn-sec" onclick="discardReminder()">DESCARTAR E COMEÇAR DO ZERO</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -520,12 +537,48 @@ function applyDraftsOnLoad() {
 
   if(target) {
     switchToTreino(target, draftsCache[target])
+    checkTreinoEsquecido(target, draftsCache[target])
   } else {
     treinoAtual = getNextTreino()
     applyTreinoUI(treinoAtual)
     renderEx()
   }
 }
+
+// ══════════════════════════════════════════
+// LEMBRETE DE TREINO NÃO FINALIZADO (2h+)
+// ══════════════════════════════════════════
+const LIMITE_ESQUECIDO = 2 * 60 * 60 * 1000
+
+function checkTreinoEsquecido(t, draft) {
+  if(!draft || !draft.inicio) return
+  const decorrido = Date.now() - draft.inicio
+  if(decorrido < LIMITE_ESQUECIDO) return
+
+  const horas = (decorrido / 3600000).toFixed(1).replace('.0', '')
+  document.getElementById('reminderSub').textContent =
+    `Você iniciou o Treino ${t} há ${horas}h e ele ainda está em aberto — parece que esqueceu de finalizar.`
+  document.getElementById('reminderOverlay').classList.add('show')
+}
+
+function closeReminder() {
+  document.getElementById('reminderOverlay').classList.remove('show')
+}
+
+function discardReminder() {
+  if(!confirm('Descartar o progresso desse treino e começar do zero?')) return
+  clearDraft(treinoAtual)
+  concluidos.clear(); inicio = Date.now()
+  renderEx(); updateProgress(); updateStatus()
+  closeReminder()
+}
+
+// também checa ao voltar de segundo plano (trocar de app e voltar depois de 2h)
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible' && uid && concluidos.size < getLista().length) {
+    checkTreinoEsquecido(treinoAtual, { inicio })
+  }
+})
 
 // ══════════════════════════════════════════
 // DADOS — TREINO A
