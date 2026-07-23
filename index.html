@@ -377,7 +377,6 @@ auth.onAuthStateChanged(async user => {
 })
 
 async function loadHistFromCloud() {
-  let draft = null
   try {
     const doc = await db.collection('users').doc(uid).get()
     if(doc.exists && doc.data().sessions) {
@@ -388,20 +387,14 @@ async function loadHistFromCloud() {
       histCache = loadLocalCache()
       if(histCache.length) await saveHistToCloud()
     }
-    draft = (doc.exists && doc.data().draft) || loadLocalDraft()
+    draftsCache = (doc.exists && doc.data().drafts) || loadLocalDrafts()
   } catch(err) {
     console.error('Falha ao carregar da nuvem, usando cache local.', err)
     histCache = loadLocalCache()
-    draft = loadLocalDraft()
+    draftsCache = loadLocalDrafts()
   }
   setSyncStatus(navigator.onLine ? 'synced' : 'offline')
-  if(draft) {
-    restoreDraft(draft)
-  } else {
-    treinoAtual = getNextTreino()
-    applyTreinoUI(treinoAtual)
-    renderEx()
-  }
+  applyDraftsOnLoad()
   renderHist(); updateStatus()
 }
 
@@ -438,13 +431,15 @@ function persistHist(h) {
 }
 
 // ══════════════════════════════════════════
-// RASCUNHO DO TREINO EM ANDAMENTO
+// RASCUNHO DO TREINO EM ANDAMENTO — um por treino (A e B),
+// assim trocar de aba nunca apaga o progresso do outro
 // ══════════════════════════════════════════
 let draftSyncTimeout = null
+let draftsCache = { A: null, B: null }
 
 function getDraftFromDOM() {
   const lista = getLista()
-  const draft = { treino: treinoAtual, concluidos: [...concluidos], inicio, values: {} }
+  const draft = { treino: treinoAtual, concluidos: [...concluidos], inicio, updatedAt: Date.now(), values: {} }
   lista.forEach(ex => {
     for(let s=0; s<ex.series; s++) {
       const p = document.getElementById(`p-${ex.id}-${s}`)
@@ -462,48 +457,74 @@ function getDraftFromDOM() {
 
 function saveDraft() {
   const draft = getDraftFromDOM()
-  localStorage.setItem('th_ab_draft', JSON.stringify(draft))
+  draftsCache[treinoAtual] = draft
+  localStorage.setItem('th_ab_drafts', JSON.stringify(draftsCache))
   clearTimeout(draftSyncTimeout)
   if(uid) setSyncStatus('saving')
   draftSyncTimeout = setTimeout(() => {
     if(!uid) return
-    db.collection('users').doc(uid).set({ draft }, { merge: true })
+    db.collection('users').doc(uid).set({ drafts: draftsCache }, { merge: true })
       .then(() => setSyncStatus('synced'))
       .catch(() => setSyncStatus('error'))
   }, 800)
 }
 
-function loadLocalDraft() {
-  try { return JSON.parse(localStorage.getItem('th_ab_draft')) || null } catch { return null }
+function loadLocalDrafts() {
+  try { return JSON.parse(localStorage.getItem('th_ab_drafts')) || { A: null, B: null } } catch { return { A: null, B: null } }
 }
 
-function clearDraft() {
-  localStorage.removeItem('th_ab_draft')
+function clearDraft(t) {
+  draftsCache[t] = null
+  localStorage.setItem('th_ab_drafts', JSON.stringify(draftsCache))
   clearTimeout(draftSyncTimeout)
-  if(uid) db.collection('users').doc(uid).set({ draft: firebase.firestore.FieldValue.delete() }, { merge: true }).catch(()=>{})
+  if(uid) db.collection('users').doc(uid).set({ drafts: draftsCache }, { merge: true }).catch(()=>{})
 }
 
-function restoreDraft(draft) {
-  if(!draft || !draft.treino) return
-  treinoAtual = draft.treino
-  concluidos = new Set(draft.concluidos || [])
-  inicio = draft.inicio || Date.now()
+// troca de treino aplicando o rascunho daquele lado, se existir
+function switchToTreino(t, draft) {
+  treinoAtual = t
+  if(draft) {
+    concluidos = new Set(draft.concluidos || [])
+    inicio = draft.inicio || Date.now()
+  } else {
+    concluidos = new Set()
+    inicio = Date.now()
+  }
 
-  applyTreinoUI(treinoAtual)
+  applyTreinoUI(t)
   renderEx()
 
-  Object.entries(draft.values || {}).forEach(([id, val]) => {
-    const el = document.getElementById(id)
-    if(el) el.value = val
-  })
-  concluidos.forEach(id => {
-    const card = document.getElementById('card-'+id)
-    if(!card) return
-    card.classList.add('done')
-    const btn = card.querySelector('.check-btn')
-    btn.classList.add('checked'); btn.textContent = '✓'
-  })
+  if(draft) {
+    Object.entries(draft.values || {}).forEach(([id, val]) => {
+      const el = document.getElementById(id)
+      if(el) el.value = val
+    })
+    concluidos.forEach(id => {
+      const card = document.getElementById('card-'+id)
+      if(!card) return
+      card.classList.add('done')
+      const btn = card.querySelector('.check-btn')
+      btn.classList.add('checked'); btn.textContent = '✓'
+    })
+  }
   updateProgress()
+}
+
+// ao abrir o app: retoma o rascunho mais recente entre A/B, ou sugere o próximo treino
+function applyDraftsOnLoad() {
+  const a = draftsCache.A, b = draftsCache.B
+  let target = null
+  if(a && b) target = (a.updatedAt||0) >= (b.updatedAt||0) ? 'A' : 'B'
+  else if(a) target = 'A'
+  else if(b) target = 'B'
+
+  if(target) {
+    switchToTreino(target, draftsCache[target])
+  } else {
+    treinoAtual = getNextTreino()
+    applyTreinoUI(treinoAtual)
+    renderEx()
+  }
 }
 
 // ══════════════════════════════════════════
@@ -553,9 +574,9 @@ function init() {
     weekday:'short', day:'2-digit', month:'short'
   }).toUpperCase()
   histCache = loadLocalCache()
-  treinoAtual = getNextTreino()
-  applyTreinoUI(treinoAtual)
-  renderEx(); renderHist(); updateStatus()
+  draftsCache = loadLocalDrafts()
+  applyDraftsOnLoad()
+  renderHist(); updateStatus()
 }
 
 // ══════════════════════════════════════════
@@ -576,11 +597,8 @@ function getNextTreino() {
 }
 
 function setTreino(t) {
-  treinoAtual = t
-  concluidos.clear(); inicio = Date.now()
-  applyTreinoUI(t)
-  renderEx(); updateProgress()
-  saveDraft()
+  if(t === treinoAtual) return
+  switchToTreino(t, draftsCache[t])
 }
 
 
@@ -737,7 +755,7 @@ function salvarEFechar() { salvarSessao(); fecharOverlay() }
 function fecharOverlay() {
   document.getElementById('finishOverlay').classList.remove('show')
   concluidos.clear(); inicio=Date.now()
-  clearDraft()
+  clearDraft(treinoAtual)
   renderEx(); updateProgress(); resetTimer(); updateStatus()
 }
 
@@ -920,7 +938,7 @@ function processarArquivoImportado(file) {
 
       const draftAtual = getDraftFromDOM()
       persistHist(merged)
-      restoreDraft(draftAtual); renderHist(); updateStatus()
+      switchToTreino(treinoAtual, draftAtual); renderHist(); updateStatus()
       showToast(`✓ ${novas.length} sessão(ões) importada(s)!`, 'ok')
     } catch {
       showToast('Erro ao ler arquivo. Verifique o formato.', 'err')
