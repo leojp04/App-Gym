@@ -23,13 +23,13 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; padding-bottom: 120px; }
 
-  /* HEADER */
+  /* header */
   .header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 18px 18px 14px; position: sticky; top: 0; z-index: 100; }
   .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
   .logo { font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 800; letter-spacing: -0.5px; }
   .date-badge { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
 
-  /* TREINO A / B SWITCH */
+  /* split switch */
   .treino-switch { display: flex; gap: 6px; margin-bottom: 10px; }
   .treino-btn { flex: 1; padding: 10px 8px; border-radius: 12px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s; text-align: center; }
   .treino-btn.active { color: var(--text); border-color: #3a3a3e; background: var(--card); }
@@ -37,19 +37,19 @@
   .treino-btn.active .treino-btn-sub { color: var(--accent); }
 
 
-  /* PROGRESS */
+  /* progress bar */
   .progress-wrap { display: flex; align-items: center; gap: 10px; }
   .progress-bg { flex: 1; height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
   .progress-fill { height: 100%; border-radius: 4px; transition: width .4s cubic-bezier(.4,0,.2,1); width: 0%; }
   .fill-a, .fill-b { background: var(--accent); }
   .progress-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); min-width: 32px; text-align: right; }
 
-  /* VIEW TABS */
+  /* tabs */
   .view-tabs { display: flex; gap: 6px; padding: 12px 16px 0; }
   .view-tab { flex: 1; padding: 9px; border-radius: 10px; background: var(--card); border: 1px solid var(--border); color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer; text-align: center; transition: all .2s; }
   .view-tab.active { background: var(--card2); color: var(--text); }
 
-  /* CARDS */
+  /* exercise cards */
   .content { padding: 12px 16px 0; }
   .ex-card { background: var(--card); border-radius: 14px; margin-bottom: 9px; overflow: hidden; border: 1px solid var(--border); transition: opacity .3s, border-color .3s; }
   .ex-card.done { opacity: 0.4; }
@@ -90,7 +90,7 @@
   .ajuste-input::placeholder { color: var(--lite); }
 
 
-  /* TIMER */
+  /* rest timer */
   .timer-banner { position: fixed; bottom: 14px; left: 14px; right: 14px; background: var(--card2); border: 1px solid var(--border); border-radius: 16px; padding: 11px 16px; display: flex; align-items: center; justify-content: space-between; z-index: 200; }
   .timer-display { font-family: 'DM Mono', monospace; font-size: 26px; font-weight: 500; color: var(--text); letter-spacing: -1px; min-width: 60px; transition: color .3s; }
   .timer-display.running { color: var(--accent); }
@@ -102,7 +102,7 @@
   .btn-reset { background: var(--card); color: var(--muted); border: 1px solid var(--border); }
   .btn-start:active, .btn-reset:active { transform: scale(.95); }
 
-  /* BACKUP */
+  /* backup buttons */
   .backup-row { display: flex; gap: 8px; padding: 12px 16px 0; }
   .backup-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 8px; border-radius: 11px; border: 1px solid var(--border); background: var(--card); font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer; transition: all .2s; color: var(--text); }
   .backup-btn:active { transform: scale(.97); opacity: .85; }
@@ -115,7 +115,7 @@
   .toast.ok { border-color: var(--green); color: var(--green); }
   .toast.err { border-color: var(--red); color: var(--red); }
 
-  /* HISTÓRICO */
+  /* history */
   .hist-section { padding: 14px; }
   .hist-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800; margin-bottom: 10px; }
   .hist-empty { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); text-align: center; padding: 40px; }
@@ -131,7 +131,7 @@
   .hist-exname { font-size: 10.5px; font-weight: 500; flex: 1; padding-right: 8px; line-height: 1.4; }
   .hist-series { font-family: 'DM Mono', monospace; font-size: 9.5px; color: var(--lite); text-align: right; }
 
-  /* TELA CONCLUSÃO */
+  /* finish screen */
   .finish-overlay { display: none; position: fixed; inset: 0; z-index: 300; background: var(--bg); flex-direction: column; align-items: center; justify-content: center; padding: 36px 22px; overflow-y: auto; }
   .finish-overlay.show { display: flex; }
   .finish-icon { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 40px; color: var(--accent); width: 76px; height: 76px; border: 2px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 22px; }
@@ -157,7 +157,7 @@
   .login-btn:active { transform: scale(.97); }
   .login-status { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 16px; }
 
-  /* LEMBRETE DE TREINO NÃO FINALIZADO */
+  /* unfinished workout nudge */
   .reminder-overlay { display: none; position: fixed; inset: 0; z-index: 900; background: rgba(12,12,13,0.96); flex-direction: column; align-items: center; justify-content: center; padding: 36px 26px; text-align: center; }
   .reminder-overlay.show { display: flex; }
   .reminder-icon { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--accent); color: var(--accent); font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
@@ -175,13 +175,13 @@
   .sync-status.synced .sync-dot { background: var(--green); }
   .sync-status.error .sync-dot, .sync-status.offline .sync-dot { background: var(--red); }
 
-  /* DRAG & DROP IMPORT */
+  /* drag & drop import */
   .drop-overlay { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(12,12,13,0.94); border: 3px dashed var(--accent); align-items: center; justify-content: center; flex-direction: column; gap: 10px; pointer-events: none; }
   .drop-overlay.show { display: flex; }
   .drop-overlay-icon { font-size: 28px; color: var(--accent); font-family: 'DM Mono', monospace; }
   .drop-overlay-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: var(--accent); }
 
-  /* PAINEL DE STATUS */
+  /* status panel */
   .status-panel { padding: 10px 16px 0; display: flex; flex-direction: column; gap: 8px; }
 
   .status-ultimo {
@@ -331,8 +331,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <script>
 // ══════════════════════════════════════════
-// FIREBASE — troque pelos dados do SEU projeto
-// (Firebase Console > Configurações do projeto > Seus apps > SDK setup)
+// firebase config — get this from your own project
+// (console > project settings > your apps > sdk setup)
 // ══════════════════════════════════════════
 const firebaseConfig = {
   apiKey: "AIzaSyAVFdjV-rX_IZ9Da6I10p-uTnfIp_a8jk4",
@@ -352,8 +352,7 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{})
 let uid = null
 let histCache = []
 
-// standalone (PWA instalado) e iOS Safari lidam mal com popup de login —
-// usa redirect, que é bem mais confiável nesses casos
+// popup login is flaky on standalone/iOS Safari, redirect is way more reliable there
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
 
 function loginGoogle() {
@@ -400,7 +399,7 @@ async function loadHistFromCloud() {
       histCache = doc.data().sessions
       localStorage.setItem('th_ab', JSON.stringify(histCache))
     } else {
-      // primeiro login: migra o que já existia neste aparelho
+      // first login on this account, grab whatever was already sitting on this device
       histCache = loadLocalCache()
       if(histCache.length) await saveHistToCloud()
     }
@@ -424,7 +423,7 @@ function saveHistToCloud() {
 }
 
 // ══════════════════════════════════════════
-// INDICADOR DE SINCRONIZAÇÃO
+// sync status indicator
 // ══════════════════════════════════════════
 function setSyncStatus(state) {
   const el = document.getElementById('syncStatus')
@@ -448,8 +447,8 @@ function persistHist(h) {
 }
 
 // ══════════════════════════════════════════
-// RASCUNHO DO TREINO EM ANDAMENTO — um por treino (A e B),
-// assim trocar de aba nunca apaga o progresso do outro
+// in-progress workout draft — kept separately per split (A/B)
+// so switching tabs never wipes out the other one
 // ══════════════════════════════════════════
 let draftSyncTimeout = null
 let draftsCache = { A: null, B: null }
@@ -497,7 +496,7 @@ function clearDraft(t) {
   if(uid) db.collection('users').doc(uid).set({ drafts: draftsCache }, { merge: true }).catch(()=>{})
 }
 
-// troca de treino aplicando o rascunho daquele lado, se existir
+// switch splits, pulling in that side's draft if it has one
 function switchToTreino(t, draft) {
   treinoAtual = t
   if(draft) {
@@ -527,7 +526,7 @@ function switchToTreino(t, draft) {
   updateProgress()
 }
 
-// ao abrir o app: retoma o rascunho mais recente entre A/B, ou sugere o próximo treino
+// on load, pick up whichever draft was touched most recently, otherwise suggest the next split
 function applyDraftsOnLoad() {
   const a = draftsCache.A, b = draftsCache.B
   let target = null
@@ -546,7 +545,7 @@ function applyDraftsOnLoad() {
 }
 
 // ══════════════════════════════════════════
-// LEMBRETE DE TREINO NÃO FINALIZADO (2h+)
+// nudge for a workout left open too long (2h+)
 // ══════════════════════════════════════════
 const LIMITE_ESQUECIDO = 2 * 60 * 60 * 1000
 
@@ -573,7 +572,7 @@ function discardReminder() {
   closeReminder()
 }
 
-// também checa ao voltar de segundo plano (trocar de app e voltar depois de 2h)
+// also fires when coming back from the background (swap apps, return 2h later)
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'visible' && uid && concluidos.size < getLista().length) {
     checkTreinoEsquecido(treinoAtual, { inicio })
@@ -581,10 +580,7 @@ document.addEventListener('visibilitychange', () => {
 })
 
 // ══════════════════════════════════════════
-// DADOS — TREINO A
-// ══════════════════════════════════════════
-// ══════════════════════════════════════════
-// DADOS — TREINO A
+// workout A exercises
 // ══════════════════════════════════════════
 const EX_A = [
   { id:'supino',   num:'1', nome:'SUPINO MAQUINA INCLINADO',   musc:'peito',   series:4, reps:'8-10',  ajuste:true  },
@@ -597,7 +593,7 @@ const EX_A = [
 ]
 
 // ══════════════════════════════════════════
-// DADOS — TREINO B
+// workout B exercises
 // ══════════════════════════════════════════
 const EX_B = [
   { id:'agach',     num:'1', nome:'AGACHAMENTO MAQUINA',        musc:'quad',        series:4, reps:'8-10',  ajuste:true  },
@@ -610,7 +606,7 @@ const EX_B = [
 ]
 
 // ══════════════════════════════════════════
-// ESTADO
+// state
 // ══════════════════════════════════════════
 let treinoAtual = 'A'
 let concluidos = new Set()
@@ -633,7 +629,7 @@ function init() {
 }
 
 // ══════════════════════════════════════════
-// TROCA DE TREINO A / B
+// switching between splits
 // ══════════════════════════════════════════
 function applyTreinoUI(t) {
   document.querySelectorAll('.treino-btn').forEach(b => b.classList.remove('active'))
@@ -642,7 +638,7 @@ function applyTreinoUI(t) {
   document.getElementById('progressFill').className = `progress-fill fill-${t.toLowerCase()}`
 }
 
-// sugere automaticamente o próximo treino (oposto do último feito)
+// auto-suggest the next split, just the opposite of whatever you did last
 function getNextTreino() {
   const h = getHist()
   if(!h.length) return 'A'
@@ -656,7 +652,7 @@ function setTreino(t) {
 
 
 // ══════════════════════════════════════════
-// VIEW
+// view switching
 // ══════════════════════════════════════════
 function setView(v) {
   document.querySelectorAll('.view-tab').forEach((t,i) =>
@@ -667,7 +663,7 @@ function setView(v) {
 }
 
 // ══════════════════════════════════════════
-// RENDER EXERCÍCIOS
+// render exercise list
 // ══════════════════════════════════════════
 function renderEx() {
   const lista = getLista()
@@ -683,7 +679,7 @@ function renderEx() {
     card.className = 'ex-card' + (done?' done':'')
     card.id = 'card-' + ex.id
 
-    // histórico anterior
+    // last time's numbers
     let prevHTML = ''
     if(prev) {
       const ps = prev.series.map((s,i)=>`S${i+1}: ${s.peso}kg×${s.reps}`).join('  ·  ')
@@ -693,7 +689,7 @@ function renderEx() {
       </div>`
     }
 
-    // séries
+    // sets
     let seriesHTML = ''
     for(let s=0; s<ex.series; s++) {
       const ps = prev?.series[s]
@@ -748,7 +744,7 @@ function toggleBody(id) {
 }
 
 // ══════════════════════════════════════════
-// CONCLUIR
+// checking off exercises
 // ══════════════════════════════════════════
 function toggleDone(id) {
   if(concluidos.has(id)) { concluidos.delete(id) }
@@ -773,7 +769,7 @@ function updateProgress() {
 }
 
 // ══════════════════════════════════════════
-// TELA CONCLUSÃO
+// finish screen
 // ══════════════════════════════════════════
 function mostrarFim() {
   const durMin = Math.round((Date.now()-inicio)/60000)
@@ -813,7 +809,7 @@ function fecharOverlay() {
 }
 
 // ══════════════════════════════════════════
-// SALVAR
+// saving the session
 // ══════════════════════════════════════════
 function salvarSessao() {
   const lista = getLista()
@@ -845,7 +841,7 @@ function salvarSessao() {
 }
 
 // ══════════════════════════════════════════
-// TIMER
+// rest timer
 // ══════════════════════════════════════════
 function toggleTimer() {
   if(timerRunning) {
@@ -883,7 +879,7 @@ function updateTimerUI() {
 }
 
 // ══════════════════════════════════════════
-// HISTÓRICO
+// history tab
 // ══════════════════════════════════════════
 const getHist = () => histCache
 
@@ -939,7 +935,7 @@ function delHist(idx) {
 }
 
 // ══════════════════════════════════════════
-// EXPORTAR / IMPORTAR
+// export / import
 // ══════════════════════════════════════════
 function exportarDados() {
   const h = getHist()
@@ -972,14 +968,14 @@ function processarArquivoImportado(file) {
     try {
       const raw = JSON.parse(e.target.result)
 
-      // aceita tanto o formato com wrapper { versao, sessoes } quanto array direto
+      // works with either the { versao, sessoes } wrapper or a plain array
       const novas = Array.isArray(raw) ? raw : (raw.sessoes || [])
 
       if(!novas.length) { showToast('Arquivo vazio ou inválido.', 'err'); return }
 
       const existentes = getHist()
 
-      // merge: une os dois arrays e remove duplicatas por data+treino
+      // merge both lists and drop dupes by date+split
       const mapa = new Map()
       ;[...existentes, ...novas].forEach(s => {
         const chave = s.data + (s.treino||'')
@@ -1008,13 +1004,13 @@ function showToast(msg, tipo='ok') {
 }
 
 // ══════════════════════════════════════════
-// PAINEL DE STATUS
+// status panel
 // ══════════════════════════════════════════
 function updateStatus() {
   const h = getHist()
   const META = 16
 
-  // ── ÚLTIMO TREINO ──
+  // last workout
   const ultimo = h[0]
   const iconEl = document.getElementById('statusIcon')
   const valEl  = document.getElementById('statusUltimoVal')
@@ -1050,7 +1046,7 @@ function updateStatus() {
     nextEl.className   = `status-next-badge ${proximo.toLowerCase()}`
   }
 
-  // ── CICLO TREINO A ──
+  // split A cycle
   const sessoesA = h.filter(s => s.treino === 'A').length
   const pct      = Math.min(sessoesA / META * 100, 100)
 
@@ -1080,7 +1076,7 @@ function updateStatus() {
 }
 
 // ══════════════════════════════════════════
-// DRAG & DROP — arraste o backup .json pra importar
+// drag & drop, drop a backup .json anywhere to import it
 // ══════════════════════════════════════════
 let dragCounter = 0
 const dropOverlay = document.getElementById('dropOverlay')
