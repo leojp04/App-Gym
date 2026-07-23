@@ -594,8 +594,18 @@ function closeReminder() {
 function discardReminder() {
   if(!confirm('Descartar o progresso desse treino e começar do zero?')) return
   clearDraft(treinoAtual)
-  concluidos.clear(); inicio = Date.now()
-  renderEx(); updateProgress(); updateStatus()
+
+  const other = treinoAtual === 'A' ? 'B' : 'A'
+  if(draftsCache[other]) {
+    switchToTreino(other, draftsCache[other])
+  } else {
+    treinoAtual = getNextTreino()
+    concluidos.clear(); inicio = Date.now()
+    applyTreinoUI(treinoAtual)
+    renderEx()
+  }
+
+  updateProgress(); updateStatus()
   closeReminder()
 }
 
