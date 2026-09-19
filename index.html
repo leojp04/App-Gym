@@ -5,257 +5,255 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Grind</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#111113">
+<meta name="theme-color" content="#1a1c1b">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Grind">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap');
 
   :root {
-    --bg: #0c0c0d; --bg2: #131315; --card: #17171a; --card2: #1f1f23;
-    --border: #2a2a2e; --text: #f3f2ee; --muted: #86868c; --lite: #6f6f76;
+    --bg: #1a1c1b; --bg2: #1f2221; --card: #232625; --card2: #2b2e2c; --surface: #262928;
+    --border: #363a38; --line-strong: #5c605d; --text: #eeebe3; --muted: #9a9c95; --lite: #85877f;
     --accent: #ff5a1f;
     --green: #4ec9a8; --red: #e8604a;
+    --ui: 'Archivo', system-ui, sans-serif; --display: 'Archivo', system-ui, sans-serif;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; padding-bottom: 120px; }
+  body { background: var(--bg); color: var(--text); font-family: var(--ui); min-height: 100vh; padding-bottom: 120px; }
 
   /* header */
-  .header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 18px 18px 14px; position: sticky; top: 0; z-index: 100; }
-  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-  .logo { font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 800; letter-spacing: -0.5px; }
-  .date-badge { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
+  .header { background: var(--bg); padding: 16px 16px 12px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
+  .header-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .logo { margin-right: auto; white-space: nowrap; font-family: var(--display); font-size: 20px; font-weight: 900; font-stretch: 125%; letter-spacing: -0.3px; }
+  .date-badge { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
   /* split switch */
-  .treino-switch { display: flex; gap: 6px; margin-bottom: 10px; }
-  .treino-btn { flex: 1; padding: 10px 8px; border-radius: 12px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s; text-align: center; }
-  .treino-btn.active { color: var(--text); border-color: #3a3a3e; background: var(--card); }
-  .treino-btn-sub { font-family: 'DM Mono', monospace; font-size: 9px; display: block; margin-top: 2px; color: var(--muted); }
-  .treino-btn.active .treino-btn-sub { color: var(--accent); }
+  .treino-switch { display: flex; gap: 2px; margin-bottom: 14px; background: var(--surface); border-radius: 12px; padding: 3px; }
+  .treino-btn { flex: 1; padding: 9px 12px 8px; border-radius: 9px; border: 0; background: transparent; color: var(--muted); font-family: var(--display); font-size: 17px; font-weight: 700; font-stretch: 75%; cursor: pointer; transition: background .2s, color .2s; text-align: left; line-height: 1.1; }
+  .treino-btn.active { color: var(--bg); background: var(--text); }
+  .treino-btn-sub { font-family: var(--ui); font-size: 12px; font-weight: 500; font-stretch: 100%; display: block; margin-top: 3px; color: var(--muted); }
+  .treino-btn.active .treino-btn-sub { color: #4d504c; }
 
-
-  /* progress bar */
-  .progress-wrap { display: flex; align-items: center; gap: 10px; }
-  .progress-bg { flex: 1; height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
-  .progress-fill { height: 100%; border-radius: 4px; transition: width .4s cubic-bezier(.4,0,.2,1); width: 0%; }
+  /* progress: one segment per exercise */
+  .progress-wrap { display: flex; align-items: center; gap: 12px; }
+  .progress-bg { --n: 7; flex: 1; height: 8px; background: var(--border); overflow: hidden;
+    -webkit-mask-image: repeating-linear-gradient(90deg, #000 0, #000 calc(100% / var(--n) - 3px), transparent calc(100% / var(--n) - 3px), transparent calc(100% / var(--n)));
+            mask-image: repeating-linear-gradient(90deg, #000 0, #000 calc(100% / var(--n) - 3px), transparent calc(100% / var(--n) - 3px), transparent calc(100% / var(--n))); }
+  .progress-fill { height: 100%; transition: width .4s cubic-bezier(.4,0,.2,1); width: 0%; }
   .fill-a, .fill-b { background: var(--accent); }
-  .progress-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); min-width: 32px; text-align: right; }
+  .progress-label { font-size: 13px; font-weight: 600; color: var(--text); min-width: 30px; text-align: right; font-variant-numeric: tabular-nums; }
 
   /* tabs */
-  .view-tabs { display: flex; gap: 6px; padding: 12px 16px 0; }
-  .view-tab { flex: 1; padding: 9px; border-radius: 10px; background: var(--card); border: 1px solid var(--border); color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer; text-align: center; transition: all .2s; }
-  .view-tab.active { background: var(--card2); color: var(--text); }
+  .view-tabs { display: flex; gap: 22px; padding: 14px 16px 0; }
+  .view-tab { padding: 6px 0 8px; background: none; border: 0; border-bottom: 2px solid transparent; color: var(--muted); font-family: var(--ui); font-size: 15px; font-weight: 600; cursor: pointer; transition: color .2s, border-color .2s; }
+  .view-tab.active { color: var(--text); border-bottom-color: var(--accent); }
 
-  /* exercise cards */
-  .content { padding: 12px 16px 0; }
-  .ex-card { background: var(--card); border-radius: 14px; margin-bottom: 9px; overflow: hidden; border: 1px solid var(--border); transition: opacity .3s, border-color .3s; }
-  .ex-card.done { opacity: 0.4; }
+  /* exercise list: rows split by a line, no cards */
+  .content { padding: 0 16px; }
+  .ex-card { border-bottom: 1px solid var(--border); transition: opacity .3s; }
+  .ex-card.done { opacity: 0.45; }
 
-  .ex-header { display: flex; align-items: center; gap: 10px; padding: 12px 13px 10px; cursor: pointer; }
-  .ex-num { font-family: 'Syne', sans-serif; font-size: 21px; font-weight: 800; min-width: 40px; color: var(--muted); line-height: 1; transition: color .3s; }
-  .ex-num.sm { font-size: 15px; }
-  .ex-info { flex: 1; }
-  .ex-nome { font-size: 12.5px; font-weight: 500; line-height: 1.3; margin-bottom: 5px; }
-  .ex-tags { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
-  .tag-musc { font-family: 'DM Mono', monospace; font-size: 8.5px; font-weight: 500; letter-spacing: 0.4px; color: var(--muted); }
-  .tag-series { font-family: 'DM Mono', monospace; font-size: 9.5px; color: var(--lite); }
+  .ex-header { display: flex; align-items: center; gap: 12px; padding: 16px 0 14px; cursor: pointer; }
+  .ex-num { font-family: var(--display); font-size: 34px; font-weight: 800; font-stretch: 62%; min-width: 30px; color: var(--muted); line-height: 1; font-variant-numeric: tabular-nums; }
+  .ex-info { flex: 1; min-width: 0; }
+  .ex-nome { font-family: var(--display); font-size: 20px; font-weight: 700; font-stretch: 75%; line-height: 1.15; margin-bottom: 4px; text-transform: lowercase; }
+  .ex-nome::first-letter { text-transform: uppercase; }
+  .ex-tags { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .tag-musc { font-size: 13px; color: var(--muted); text-transform: capitalize; }
+  .tag-series { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 
-  .check-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--border); background: transparent; color: transparent; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; flex-shrink: 0; font-weight: 700; }
+  .check-btn { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--line-strong); background: transparent; color: transparent; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s, border-color .2s, transform .1s; flex-shrink: 0; font-weight: 700; }
   .check-btn.checked { background: var(--accent); border-color: var(--accent); color: var(--bg); }
-  .check-btn:active { transform: scale(.88); }
+  .check-btn:active { transform: scale(.9); }
 
-  .ex-body { padding: 0 13px 13px; display: none; }
+  .ex-body { padding: 0 0 18px; display: none; }
   .ex-body.open { display: block; }
 
-  .prev-info { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); background: var(--bg2); border-radius: 8px; padding: 8px 11px; margin-bottom: 11px; line-height: 1.7; }
-  .prev-title { color: var(--muted); margin-bottom: 2px; font-size: 9px; letter-spacing: 0.5px; }
+  .series-head, .serie-row { display: grid; grid-template-columns: 24px 1fr 84px 84px; gap: 10px; align-items: center; }
+  .series-head { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .series-head span:nth-child(3), .series-head span:nth-child(4) { text-align: center; }
+  .series-grid { display: flex; flex-direction: column; gap: 8px; }
+  .serie-label { font-family: var(--display); font-size: 18px; font-weight: 700; font-stretch: 75%; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .serie-prev { font-size: 15px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .serie-input { width: 100%; height: 52px; background: var(--surface); border: 0; border-radius: 10px; padding: 0 6px; color: var(--text); font-family: var(--display); font-size: 26px; font-weight: 700; font-stretch: 75%; font-variant-numeric: tabular-nums; outline: none; text-align: center; }
+  .serie-input:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
+  .serie-input::placeholder { color: var(--line-strong); font-weight: 500; font-size: 15px; font-stretch: 100%; font-family: var(--ui); }
 
-  .series-grid { display: flex; flex-direction: column; gap: 7px; }
-  .serie-row { display: flex; align-items: center; gap: 7px; }
-  .serie-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); min-width: 28px; }
-  .input-group { flex: 1; }
-  .serie-input { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: 9px; padding: 9px 6px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 13px; outline: none; transition: border-color .2s; text-align: center; }
-  .serie-input:focus { border-color: var(--accent); }
-  .serie-input::placeholder { color: var(--lite); font-size: 10px; }
-  .input-label { font-family: 'DM Mono', monospace; font-size: 8.5px; color: var(--muted); text-align: center; margin-top: 2px; }
-  .serie-sep { font-family: 'DM Mono', monospace; color: var(--muted); font-size: 11px; }
+  .ajuste-row { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+  .ajuste-label { font-size: 14px; color: var(--muted); min-width: 108px; }
+  .ajuste-input { flex: 1; height: 44px; background: var(--surface); border: 0; border-radius: 10px; padding: 0 12px; color: var(--accent); font-family: var(--ui); font-size: 16px; font-weight: 600; outline: none; }
+  .ajuste-input:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
+  .ajuste-input::placeholder { color: var(--line-strong); font-weight: 400; }
 
-  .ajuste-row { display: flex; align-items: center; gap: 9px; margin-top: 9px; }
-  .ajuste-label { font-family: 'DM Mono', monospace; font-size: 9.5px; color: var(--muted); min-width: 54px; }
-  .ajuste-input { flex: 1; background: var(--card2); border: 1px solid var(--border); border-radius: 9px; padding: 8px 11px; color: var(--accent); font-family: 'DM Mono', monospace; font-size: 11px; outline: none; transition: border-color .2s; }
-  .ajuste-input:focus { border-color: var(--accent); }
-  .ajuste-input::placeholder { color: var(--lite); }
+  .chart-trigger { margin-top: 8px; min-height: 44px; background: none; border: 0; padding: 0; font-family: var(--ui); font-size: 14px; font-weight: 600; color: var(--text); text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 5px; cursor: pointer; }
+  .chart-trigger:active { opacity: .6; }
 
-  .chart-trigger { margin-top: 10px; width: 100%; background: transparent; border: 1px solid var(--border); border-radius: 9px; padding: 9px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.4px; color: var(--muted); cursor: pointer; }
-  .chart-trigger:active { transform: scale(.97); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 
   /* exercise editing */
-  .edit-toggle-row { padding: 0 16px 10px; }
-  .edit-toggle-btn { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.4px; cursor: pointer; }
+  .edit-toggle-row { padding: 6px 16px 4px; display: flex; justify-content: flex-end; }
+  .edit-toggle-btn { min-height: 44px; padding: 0 4px; border: 0; background: none; color: var(--text); font-family: var(--ui); font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: underline; text-decoration-color: var(--line-strong); text-decoration-thickness: 2px; text-underline-offset: 5px; }
   .edit-toggle-btn.active { color: var(--accent); border-color: var(--accent); }
   .edit-toggle-btn:active { transform: scale(.98); }
-  .edit-toggle-row-split { display: flex; gap: 8px; }
-  .edit-toggle-row-split .edit-toggle-btn { flex: 1; }
+  .edit-toggle-row-split { display: flex; gap: 8px; width: 100%; }
+  .edit-toggle-row-split .edit-toggle-btn { flex: 1; border-radius: 12px; border: 1px solid var(--line-strong); text-decoration: none; }
   .edit-cancel-btn { color: var(--red); border-color: var(--red); }
   .edit-save-btn { color: var(--bg); background: var(--accent); border-color: var(--accent); font-weight: 700; }
 
   .edit-card { padding: 13px; display: flex; flex-direction: column; gap: 8px; }
-  .edit-input { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: 9px; padding: 9px 11px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 12.5px; outline: none; }
+  .edit-input { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: 9px; padding: 9px 11px; color: var(--text); font-family: var(--ui); font-size: 12.5px; outline: none; }
   .edit-input:focus { border-color: var(--accent); }
   .edit-row-2 { display: flex; gap: 7px; }
-  .edit-row-2 .edit-input.sm { font-family: 'DM Mono', monospace; font-size: 11px; text-align: center; }
-  .edit-check-row { display: flex; align-items: center; gap: 8px; font-family: 'DM Mono', monospace; font-size: 10.5px; color: var(--muted); }
+  .edit-row-2 .edit-input.sm { font-family: var(--ui); font-size: 11px; text-align: center; }
+  .edit-check-row { display: flex; align-items: center; gap: 8px; font-family: var(--ui); font-size: 10.5px; color: var(--muted); }
   .edit-actions { display: flex; align-items: center; gap: 9px; margin-top: 2px; padding-top: 9px; border-top: 1px solid var(--border); }
   .edit-reorder-group { display: flex; align-items: center; gap: 5px; }
-  .edit-reorder-label { font-family: 'DM Mono', monospace; font-size: 8.5px; color: var(--muted); letter-spacing: 0.4px; margin-right: 2px; }
-  .edit-move-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10.5px; cursor: pointer; }
+  .edit-reorder-label { font-family: var(--ui); font-size: 8.5px; color: var(--muted); letter-spacing: 0.4px; margin-right: 2px; }
+  .edit-move-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: var(--ui); font-size: 10.5px; cursor: pointer; }
   .edit-move-btn:disabled { opacity: .3; }
-  .edit-del-btn { flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--red); background: transparent; color: var(--red); font-family: 'DM Mono', monospace; font-size: 10.5px; cursor: pointer; }
-  .add-ex-btn { width: 100%; padding: 13px; border-radius: 12px; border: 1px dashed var(--border); background: transparent; color: var(--accent); font-family: 'DM Mono', monospace; font-size: 11.5px; letter-spacing: 0.4px; cursor: pointer; margin-bottom: 9px; }
+  .edit-del-btn { flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--red); background: transparent; color: var(--red); font-family: var(--ui); font-size: 10.5px; cursor: pointer; }
+  .add-ex-btn { width: 100%; padding: 13px; border-radius: 12px; border: 1px dashed var(--border); background: transparent; color: var(--accent); font-family: var(--ui); font-size: 11.5px; letter-spacing: 0.4px; cursor: pointer; margin-bottom: 9px; }
   .add-ex-btn:active { transform: scale(.98); }
 
   /* finish workout early */
-  .finalizar-row { padding: 4px 16px 0; }
-  .finalizar-btn { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: 'DM Mono', monospace; font-size: 11.5px; letter-spacing: 0.4px; cursor: pointer; }
+  .finalizar-row { padding: 16px 16px 0; }
+  .finalizar-btn { width: 100%; min-height: 52px; border-radius: 12px; border: 0; background: var(--surface); color: var(--text); font-family: var(--ui); font-size: 16px; font-weight: 700; cursor: pointer; }
   .finalizar-btn:active { transform: scale(.98); }
 
   /* progress chart */
-  .chart-overlay { display: none; position: fixed; inset: 0; z-index: 850; background: rgba(12,12,13,0.92); align-items: center; justify-content: center; padding: 20px; }
+  .chart-overlay { display: none; position: fixed; inset: 0; z-index: 850; background: rgba(26,28,27,0.94); align-items: center; justify-content: center; padding: 20px; }
   .chart-overlay.show { display: flex; }
-  .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; width: 100%; max-width: 360px; }
-  .chart-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 4px; }
-  .chart-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; line-height: 1.3; }
-  .chart-close { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 2px 4px; flex-shrink: 0; }
-  .chart-sub { font-family: 'DM Mono', monospace; font-size: 10.5px; color: var(--muted); margin-bottom: 16px; }
+  .chart-card { background: var(--card); border-radius: 20px; padding: 20px 20px 16px; width: 100%; max-width: 380px; }
+  .chart-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 4px; }
+  .chart-title { font-family: var(--display); font-weight: 800; font-stretch: 75%; font-size: 24px; line-height: 1.1; }
+  .chart-close { flex-shrink: 0; min-width: 44px; min-height: 44px; margin: -10px -10px 0 0; background: none; border: 0; color: var(--muted); font-family: var(--ui); font-size: 14px; font-weight: 600; cursor: pointer; }
+  .chart-sub { font-size: 14px; color: var(--muted); margin-bottom: 16px; font-variant-numeric: tabular-nums; }
   .chart-svg { width: 100%; height: 140px; display: block; }
-  .chart-empty { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); text-align: center; padding: 34px 10px; line-height: 1.6; }
-
+  .chart-empty { font-size: 15px; color: var(--muted); padding: 20px 0 12px; line-height: 1.5; }
 
   /* rest timer */
-  .timer-banner { position: fixed; bottom: 14px; left: 14px; right: 14px; background: var(--card2); border: 1px solid var(--border); border-radius: 16px; padding: 11px 16px; display: flex; align-items: center; justify-content: space-between; z-index: 200; }
-  .timer-display { font-family: 'DM Mono', monospace; font-size: 26px; font-weight: 500; color: var(--text); letter-spacing: -1px; min-width: 60px; transition: color .3s; }
+  .timer-banner { position: fixed; bottom: 12px; left: 12px; right: 12px; background: var(--card2); border-radius: 16px; padding: 10px 10px 10px 18px; display: flex; align-items: center; justify-content: space-between; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,.45); }
+  .timer-display { font-family: var(--display); font-size: 42px; font-weight: 800; font-stretch: 75%; font-variant-numeric: tabular-nums; line-height: 1; color: var(--text); min-width: 92px; transition: color .3s; }
   .timer-display.running { color: var(--accent); }
   .timer-display.done { color: var(--green); }
-  .timer-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); margin-top: 1px; }
-  .timer-btns { display: flex; gap: 7px; }
-  .timer-btn { padding: 8px 14px; border-radius: 9px; border: none; font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer; transition: all .15s; }
+  .timer-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .timer-btns { display: flex; gap: 8px; }
+  .timer-btn { min-height: 44px; padding: 0 18px; border-radius: 12px; border: none; font-family: var(--ui); font-size: 14px; font-weight: 700; cursor: pointer; transition: transform .15s; }
   .btn-start { background: var(--accent); color: var(--bg); }
-  .btn-reset { background: var(--card); color: var(--muted); border: 1px solid var(--border); }
+  .btn-reset { background: transparent; color: var(--muted); }
   .btn-start:active, .btn-reset:active { transform: scale(.95); }
 
   /* backup buttons */
-  .backup-row { display: flex; gap: 8px; padding: 12px 16px 0; }
-  .backup-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 8px; border-radius: 11px; border: 1px solid var(--border); background: var(--card); font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer; transition: all .2s; color: var(--text); }
-  .backup-btn:active { transform: scale(.97); opacity: .85; }
-  .backup-btn.export, .backup-btn.import { border-color: var(--border); color: var(--text); background: var(--card); }
-  .backup-btn-icon { font-size: 15px; }
+  .backup-row { display: flex; gap: 8px; padding: 16px 16px 0; }
+  .backup-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 12px; border-radius: 12px; border: 0; background: var(--surface); font-family: var(--ui); font-size: 14px; font-weight: 600; cursor: pointer; transition: transform .1s; color: var(--text); }
+  .backup-btn:active { transform: scale(.97); }
+  .backup-btn-icon { font-size: 16px; color: var(--muted); }
 
   /* TOAST */
-  .toast { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--card2); border: 1px solid var(--border); border-radius: 20px; padding: 10px 20px; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text); z-index: 500; opacity: 0; transition: all .3s; pointer-events: none; white-space: nowrap; }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .toast.ok { border-color: var(--green); color: var(--green); }
-  .toast.err { border-color: var(--red); color: var(--red); }
+  .toast { position: fixed; bottom: 110px; left: 0; right: 0; margin: 0 auto; width: fit-content; transform: translateY(20px); max-width: calc(100vw - 32px); background: var(--card2); border-radius: 14px; padding: 12px 18px; font-family: var(--ui); font-size: 14px; font-weight: 600; text-align: center; color: var(--text); z-index: 500; opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none; box-shadow: 0 8px 24px rgba(0,0,0,.45); }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.ok { color: var(--green); }
+  .toast.err { color: var(--red); }
 
-  /* history */
-  .hist-section { padding: 14px; }
-  .app-credit { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); text-align: center; padding: 6px 14px 28px; }
-  .hist-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800; margin-bottom: 10px; }
-  .hist-empty { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); text-align: center; padding: 40px; }
-  .hist-entry { background: var(--card); border-radius: 12px; padding: 13px 14px; margin-bottom: 8px; border: 1px solid var(--border); }
-  .hist-meta { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 9px; }
-  .hist-date { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
-  .hist-badges { display: flex; gap: 5px; margin-top: 3px; }
-  .hist-badge { font-family: 'DM Mono', monospace; font-size: 9px; padding: 2px 7px; border-radius: 20px; }
-  .badge-a, .badge-b { background: var(--card2); color: var(--muted); }
-  .badge-dur { background: var(--card2); color: var(--muted); }
-  .hist-delete { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--red); background: none; border: none; cursor: pointer; padding: 4px; }
-  .hist-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px; }
-  .hist-exname { font-size: 10.5px; font-weight: 500; flex: 1; padding-right: 8px; line-height: 1.4; }
-  .hist-series { font-family: 'DM Mono', monospace; font-size: 9.5px; color: var(--lite); text-align: right; }
+  /* history: sessions as rows split by a line, like the exercise list */
+  .hist-section { padding: 4px 16px 0; }
+  .hist-hint { font-size: 13px; color: var(--muted); padding: 14px 0 0; }
+  .app-credit { font-size: 13px; color: var(--muted); padding: 24px 16px 32px; }
+  .hist-empty { padding: 36px 0; font-size: 15px; line-height: 1.5; color: var(--muted); max-width: 30ch; }
+  .hist-empty strong { display: block; margin-bottom: 6px; font-family: var(--display); font-size: 24px; font-weight: 800; font-stretch: 75%; color: var(--text); }
+  .hist-entry { padding: 18px 0 12px; border-bottom: 1px solid var(--border); }
+  .hist-meta { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .hist-date { font-family: var(--display); font-size: 24px; font-weight: 800; font-stretch: 75%; line-height: 1.1; }
+  .hist-date::first-letter { text-transform: uppercase; }
+  .hist-badges { display: flex; flex-wrap: wrap; gap: 2px 14px; margin-top: 4px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .hist-delete { min-width: 44px; min-height: 44px; margin: -10px -8px 0 0; padding: 0 8px; background: none; border: 0; font-family: var(--ui); font-size: 14px; font-weight: 600; color: var(--red); cursor: pointer; }
+  .hist-delete:active { opacity: .6; }
+  .hist-row { padding: 8px 0; }
+  .hist-exname { font-size: 15px; font-weight: 600; line-height: 1.3; }
+  .hist-series { display: flex; flex-wrap: wrap; gap: 2px 14px; margin-top: 3px; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .hist-aj { color: var(--accent); }
 
   /* finish screen */
-  .finish-overlay { display: none; position: fixed; inset: 0; z-index: 300; background: var(--bg); flex-direction: column; align-items: center; justify-content: center; padding: 36px 22px; overflow-y: auto; }
+  .finish-overlay { display: none; position: fixed; inset: 0; z-index: 300; background: var(--bg); flex-direction: column; padding: 36px max(24px, calc(50vw - 210px)) calc(32px + env(safe-area-inset-bottom)); overflow-y: auto; }
   .finish-overlay.show { display: flex; }
-  .finish-icon { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 40px; color: var(--accent); width: 76px; height: 76px; border: 2px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 22px; }
-  .finish-title { font-family: 'Syne', sans-serif; font-size: 34px; font-weight: 800; text-align: center; margin-bottom: 5px; letter-spacing: -1px; line-height: 1.1; }
-  .finish-sub { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); text-align: center; margin-bottom: 24px; }
-  .finish-stats { width: 100%; background: var(--card); border-radius: 14px; padding: 16px; margin-bottom: 18px; border: 1px solid var(--border); }
-  .fstat { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
-  .fstat:last-child { border-bottom: none; }
-  .fstat-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
-  .fstat-val { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text); font-weight: 500; }
-  .finish-btn { width: 100%; padding: 17px; border-radius: 13px; border: none; background: var(--accent); color: var(--bg); font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer; letter-spacing: 0.5px; margin-bottom: 9px; }
-  .finish-btn-sec { width: 100%; padding: 13px; border-radius: 13px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer; }
+  .finish-title { margin-top: auto; margin-bottom: 10px; font-family: var(--display); font-size: 64px; font-weight: 900; font-stretch: 75%; line-height: .95; letter-spacing: -1px; }
+  .finish-sub { margin-bottom: 28px; font-size: 15px; color: var(--muted); }
+  .finish-sub::first-letter { text-transform: uppercase; }
+  .finish-stats { width: 100%; margin-bottom: 24px; }
+  .fstat { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .fstat:first-child { border-top: 1px solid var(--border); }
+  .fstat-label { font-size: 15px; color: var(--muted); text-transform: lowercase; }
+  .fstat-label::first-letter { text-transform: uppercase; }
+  .fstat-val { font-family: var(--display); font-size: 24px; font-weight: 800; font-stretch: 75%; font-variant-numeric: tabular-nums; color: var(--text); }
+  .finish-btn { width: 100%; min-height: 56px; margin-bottom: 8px; border-radius: 14px; border: 0; background: var(--accent); color: var(--bg); font-family: var(--ui); font-size: 16px; font-weight: 700; cursor: pointer; }
+  .finish-btn:active { transform: scale(.98); }
+  .finish-btn-sec { width: 100%; min-height: 48px; border: 0; background: transparent; color: var(--red); font-family: var(--ui); font-size: 15px; font-weight: 600; cursor: pointer; }
 
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
   .pulsing { animation: pulse 1s infinite; }
 
   /* LOGIN */
-  .login-overlay { display: flex; position: fixed; inset: 0; z-index: 1000; background: var(--bg); flex-direction: column; align-items: center; justify-content: center; padding: 36px 22px; text-align: center; }
+  .login-overlay { display: flex; position: fixed; inset: 0; z-index: 1000; background: var(--bg); flex-direction: column; align-items: flex-start; justify-content: flex-end; padding: 36px max(24px, calc(50vw - 210px)) calc(48px + env(safe-area-inset-bottom)); text-align: left; }
   .login-overlay.hide { display: none; }
-  .login-logo { font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 800; margin-bottom: 6px; }
-  .login-sub { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 30px; }
-  .login-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 300px; padding: 14px; border-radius: 13px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; }
-  .login-btn:active { transform: scale(.97); }
-  .login-status { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 16px; }
+  @media (min-width: 700px) { .login-overlay { justify-content: center; } }
+  .login-logo { margin-bottom: 14px; font-family: var(--display); font-size: 64px; font-weight: 900; font-stretch: 125%; letter-spacing: -1.5px; line-height: .95; }
+  .login-sub { max-width: 30ch; margin-bottom: 32px; font-size: 17px; line-height: 1.45; color: var(--muted); }
+  .login-btn { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 56px; border-radius: 14px; border: 0; background: var(--text); color: var(--bg); font-family: var(--ui); font-size: 16px; font-weight: 700; cursor: pointer; }
+  .login-btn:active { transform: scale(.98); }
+  .login-status { min-height: 1.45em; margin-top: 16px; font-size: 14px; line-height: 1.45; color: var(--muted); }
 
   /* unfinished workout nudge */
-  .reminder-overlay { display: none; position: fixed; inset: 0; z-index: 900; background: rgba(12,12,13,0.96); flex-direction: column; align-items: center; justify-content: center; padding: 36px 26px; text-align: center; }
+  .reminder-overlay { display: none; position: fixed; inset: 0; z-index: 900; background: rgba(26,28,27,0.97); flex-direction: column; padding: 36px max(24px, calc(50vw - 210px)) calc(32px + env(safe-area-inset-bottom)); overflow-y: auto; }
   .reminder-overlay.show { display: flex; }
-  .reminder-icon { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--accent); color: var(--accent); font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
-  .reminder-title { font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 8px; }
-  .reminder-sub { font-family: 'DM Mono', monospace; font-size: 11.5px; color: var(--muted); line-height: 1.6; margin-bottom: 26px; max-width: 300px; }
-  .reminder-btn { width: 100%; max-width: 300px; padding: 15px; border-radius: 13px; border: none; background: var(--accent); color: var(--bg); font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 800; cursor: pointer; letter-spacing: 0.5px; margin-bottom: 10px; }
-  .reminder-btn-sec { width: 100%; max-width: 300px; padding: 12px; border-radius: 13px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10.5px; cursor: pointer; }
+  .reminder-title { margin-top: auto; margin-bottom: 12px; font-family: var(--display); font-size: 48px; font-weight: 900; font-stretch: 75%; line-height: 1; }
+  .reminder-sub { max-width: 30ch; margin-bottom: 28px; font-size: 17px; line-height: 1.45; color: var(--muted); }
+  .reminder-btn { width: 100%; min-height: 56px; margin-bottom: 8px; border-radius: 14px; border: 0; background: var(--accent); color: var(--bg); font-family: var(--ui); font-size: 16px; font-weight: 700; cursor: pointer; }
+  .reminder-btn:active { transform: scale(.98); }
+  .reminder-btn-sec { width: 100%; min-height: 48px; border: 0; background: transparent; color: var(--red); font-family: var(--ui); font-size: 15px; font-weight: 600; cursor: pointer; }
 
-  .user-badge { display: flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); cursor: pointer; }
+  .user-badge { display: flex; align-items: center; gap: 6px; font-family: var(--ui); font-size: 11px; color: var(--muted); cursor: pointer; }
   .user-badge img { width: 18px; height: 18px; border-radius: 50%; }
 
-  .sync-status { display: flex; align-items: center; gap: 5px; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); }
+  .sync-status { display: flex; align-items: center; gap: 5px; font-family: var(--ui); font-size: 11px; color: var(--muted); }
+  .sync-status.synced #syncStatusText { display: none; }
   .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .3s; }
   .sync-status.saving .sync-dot { background: var(--accent); animation: pulse 1s infinite; }
   .sync-status.synced .sync-dot { background: var(--green); }
   .sync-status.error .sync-dot, .sync-status.offline .sync-dot { background: var(--red); }
 
-  /* drag & drop import */
-  .drop-overlay { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(12,12,13,0.94); border: 3px dashed var(--accent); align-items: center; justify-content: center; flex-direction: column; gap: 10px; pointer-events: none; }
+  /* drag & drop import: the dashed edge marks the drop zone */
+  .drop-overlay { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(26,28,27,0.94); border: 3px dashed var(--accent); align-items: center; justify-content: center; flex-direction: column; gap: 10px; pointer-events: none; }
   .drop-overlay.show { display: flex; }
-  .drop-overlay-icon { font-size: 28px; color: var(--accent); font-family: 'DM Mono', monospace; }
-  .drop-overlay-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: var(--accent); }
+  .drop-overlay-icon { font-size: 40px; line-height: 1; color: var(--accent); font-family: var(--ui); }
+  .drop-overlay-text { font-family: var(--display); font-size: 28px; font-weight: 800; font-stretch: 75%; color: var(--text); }
 
-  /* status panel */
-  .status-panel { padding: 10px 16px 0; display: flex; flex-direction: column; gap: 8px; }
+  /* status panel: plain text, no boxes */
+  .status-panel { padding: 16px 16px 4px; display: flex; flex-direction: column; gap: 18px; }
 
-  .status-ultimo {
-    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-    padding: 11px 14px; display: flex; align-items: center; gap: 12px;
-  }
-  .status-ultimo-icon { font-family: 'DM Mono', monospace; font-weight: 700; font-size: 13px; color: var(--accent); width: 30px; height: 30px; border: 1px solid var(--border); border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .status-ultimo { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+  .status-ultimo-icon { display: none; }
   .status-ultimo-info { flex: 1; }
-  .status-ultimo-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 3px; }
-  .status-ultimo-val { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; }
-  .status-ultimo-when { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 1px; }
-  .status-next-badge { font-family: 'DM Mono', monospace; font-size: 9px; padding: 3px 9px; border-radius: 20px; background: var(--card2); color: var(--accent); border: 1px solid var(--border); }
+  .status-ultimo-label { font-size: 13px; color: var(--muted); margin-bottom: 2px; }
+  .status-ultimo-val { font-family: var(--display); font-size: 24px; font-weight: 800; font-stretch: 75%; line-height: 1.1; }
+  .status-ultimo-when { font-size: 13px; color: var(--muted); margin-top: 3px; }
+  .status-next-badge { font-size: 14px; font-weight: 600; color: var(--accent); padding-bottom: 2px; }
 
-  .status-ciclo {
-    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-    padding: 11px 14px;
-  }
-  .status-ciclo-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-  .status-ciclo-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 0.5px; }
-  .status-ciclo-count { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; }
+  .status-ciclo-top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+  .status-ciclo-label { font-size: 13px; color: var(--muted); }
+  .status-ciclo-count { font-family: var(--display); font-size: 20px; font-weight: 800; font-stretch: 75%; font-variant-numeric: tabular-nums; }
   .status-ciclo-count.safe { color: var(--text); }
   .status-ciclo-count.warn { color: var(--accent); }
   .status-ciclo-count.ready { color: var(--red); }
-  .ciclo-bar-bg { height: 6px; background: var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 6px; }
-  .ciclo-bar-fill { height: 100%; border-radius: 6px; transition: width .5s cubic-bezier(.4,0,.2,1); }
-  .ciclo-bar-fill.safe { background: var(--lite); }
+  .ciclo-bar-bg { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+  .ciclo-bar-fill { height: 100%; border-radius: 4px; transition: width .5s cubic-bezier(.4,0,.2,1); }
+  .ciclo-bar-fill.safe { background: var(--line-strong); }
   .ciclo-bar-fill.warn { background: var(--accent); }
   .ciclo-bar-fill.ready { background: var(--red); }
-  .ciclo-msg { font-family: 'DM Mono', monospace; font-size: 9.5px; color: var(--muted); line-height: 1.5; }
+  .ciclo-msg { font-size: 13px; color: var(--muted); line-height: 1.45; }
   .ciclo-msg.ready { color: var(--red); }
 
   #logoLetter { color: var(--accent); }
@@ -273,12 +271,12 @@
 
   <div class="treino-switch">
     <button class="treino-btn active a" onclick="setTreino('A')">
-      TREINO A
-      <span class="treino-btn-sub">SUPERIOR · 60-65 MIN</span>
+      Treino A
+      <span class="treino-btn-sub">Superior, 60–65 min</span>
     </button>
     <button class="treino-btn b" onclick="setTreino('B')">
-      TREINO B
-      <span class="treino-btn-sub">INFERIOR · 65-70 MIN</span>
+      Treino B
+      <span class="treino-btn-sub">Inferior, 65–70 min</span>
     </button>
   </div>
 <div class="progress-wrap">
@@ -288,23 +286,23 @@
 </div>
 
 <div class="view-tabs">
-  <button class="view-tab active" onclick="setView('treino')">TREINO</button>
-  <button class="view-tab" onclick="setView('historico')">HISTÓRICO</button>
+  <button class="view-tab active" onclick="setView('treino')">Treino</button>
+  <button class="view-tab" onclick="setView('historico')">Histórico</button>
 </div>
 
 <div class="status-panel" id="statusPanel">
   <div class="status-ultimo">
     <div class="status-ultimo-icon" id="statusIcon">—</div>
     <div class="status-ultimo-info">
-      <div class="status-ultimo-label">ÚLTIMO TREINO</div>
+      <div class="status-ultimo-label">Último treino</div>
       <div class="status-ultimo-val" id="statusUltimoVal">Nenhum ainda</div>
       <div class="status-ultimo-when" id="statusUltimoWhen"></div>
     </div>
-    <div class="status-next-badge" id="statusNextBadge">PRÓXIMO: —</div>
+    <div class="status-next-badge" id="statusNextBadge">Próximo: —</div>
   </div>
   <div class="status-ciclo">
     <div class="status-ciclo-top">
-      <div class="status-ciclo-label">CICLO TREINO A · META 16 SESSÕES</div>
+      <div class="status-ciclo-label">Ciclo do treino A, meta de 16 sessões</div>
       <div class="status-ciclo-count safe" id="cicloCount">0/16</div>
     </div>
     <div class="ciclo-bar-bg"><div class="ciclo-bar-fill safe" id="cicloBar" style="width:0%"></div></div>
@@ -316,21 +314,21 @@
   <div class="edit-toggle-row" id="editToggleRow"></div>
   <div class="content" id="exList"></div>
   <div class="finalizar-row" id="finalizarRow">
-    <button class="finalizar-btn" onclick="finalizarTreino()">FINALIZAR TREINO</button>
+    <button class="finalizar-btn" onclick="finalizarTreino()">Finalizar treino</button>
   </div>
 </div>
 <div id="viewHistorico" style="display:none">
   <div class="backup-row">
     <button class="backup-btn export" onclick="exportarDados()">
-      <span class="backup-btn-icon">↑</span> EXPORTAR
+      <span class="backup-btn-icon">↑</span> Exportar
     </button>
     <button class="backup-btn import" onclick="document.getElementById('importInput').click()">
-      <span class="backup-btn-icon">↓</span> IMPORTAR
+      <span class="backup-btn-icon">↓</span> Importar
     </button>
     <input type="file" id="importInput" accept=".json" style="display:none" onchange="importarDados(event)">
   </div>
   <div class="hist-section">
-    <div class="hist-title">HISTÓRICO</div>
+    <div class="hist-hint">Cada série aparece como carga em kg × repetições.</div>
     <div id="histList"></div>
   </div>
   <div class="app-credit">feito por Leonardo Pereira</div>
@@ -338,9 +336,9 @@
 
 <div class="login-overlay hide" id="loginOverlay">
   <div class="login-logo">GRIND</div>
-  <div class="login-sub">Entre para salvar seus treinos na nuvem<br>e acessar de qualquer aparelho.</div>
+  <div class="login-sub">Entre para salvar seus treinos na nuvem e acessar de qualquer aparelho.</div>
   <button class="login-btn" onclick="loginGoogle()">Entrar com Google</button>
-  <div class="login-status" id="loginStatus"></div>
+  <div class="login-status" id="loginStatus" role="status" aria-live="polite"></div>
 </div>
 
 <div class="drop-overlay" id="dropOverlay">
@@ -349,18 +347,17 @@
 </div>
 
 <div class="reminder-overlay" id="reminderOverlay">
-  <div class="reminder-icon">!</div>
-  <div class="reminder-title">TREINO NÃO FINALIZADO</div>
+  <div class="reminder-title">Treino não finalizado</div>
   <div class="reminder-sub" id="reminderSub"></div>
-  <button class="reminder-btn" onclick="closeReminder()">CONTINUAR TREINO</button>
-  <button class="reminder-btn-sec" onclick="discardReminder()">DESCARTAR E COMEÇAR DO ZERO</button>
+  <button class="reminder-btn" onclick="closeReminder()">Continuar treino</button>
+  <button class="reminder-btn-sec" onclick="discardReminder()">Descartar e começar do zero</button>
 </div>
 
 <div class="chart-overlay" id="chartOverlay" onclick="if(event.target===this) closeChart()">
   <div class="chart-card">
     <div class="chart-header">
       <div class="chart-title" id="chartTitle"></div>
-      <button class="chart-close" onclick="closeChart()">✕</button>
+      <button class="chart-close" aria-label="Fechar gráfico" onclick="closeChart()">Fechar</button>
     </div>
     <div class="chart-sub" id="chartSub"></div>
     <div id="chartBody"></div>
@@ -372,21 +369,20 @@
 <div class="timer-banner">
   <div>
     <div class="timer-display" id="timerDisplay">1:15</div>
-    <div class="timer-label">DESCANSO · 75s</div>
+    <div class="timer-label">Descanso de 75 s</div>
   </div>
   <div class="timer-btns">
-    <button class="timer-btn btn-reset" onclick="resetTimer()">RESET</button>
-    <button class="timer-btn btn-start" id="timerBtn" onclick="toggleTimer()">START</button>
+    <button class="timer-btn btn-reset" onclick="resetTimer()">Zerar</button>
+    <button class="timer-btn btn-start" id="timerBtn" onclick="toggleTimer()">Iniciar</button>
   </div>
 </div>
 
 <div class="finish-overlay" id="finishOverlay">
-  <div class="finish-icon">✓</div>
-  <div class="finish-title" id="finishTitle">TREINO<br>CONCLUÍDO</div>
+  <div class="finish-title" id="finishTitle">Treino<br>concluído</div>
   <div class="finish-sub" id="finishDate"></div>
   <div class="finish-stats" id="finishStats"></div>
-  <button class="finish-btn" onclick="salvarEFechar()">SALVAR E VOLTAR</button>
-  <button class="finish-btn-sec" onclick="fecharOverlay()">FECHAR SEM SALVAR</button>
+  <button class="finish-btn" onclick="salvarEFechar()">Salvar e voltar</button>
+  <button class="finish-btn-sec" onclick="fecharOverlay()">Fechar sem salvar</button>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
@@ -418,6 +414,20 @@ let histCache = []
 // popup login is flaky on standalone/iOS Safari, redirect is way more reliable there
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
 
+// firebase error codes -> something the user can act on
+const ERROS_LOGIN = {
+  'auth/popup-closed-by-user': 'A janela de login foi fechada. Toque em Entrar com Google para tentar de novo.',
+  'auth/cancelled-popup-request': 'A janela de login foi fechada. Toque em Entrar com Google para tentar de novo.',
+  'auth/popup-blocked': 'O navegador bloqueou a janela de login. Libere pop-ups para este site e tente de novo.',
+  'auth/unauthorized-domain': 'Este endereço não está autorizado para login. Abra o app pelo endereço oficial.',
+  'auth/network-request-failed': 'Sem conexão. Verifique a internet e tente de novo.'
+}
+
+function mostrarErroLogin(err) {
+  console.error('Falha no login', err)
+  document.getElementById('loginStatus').textContent = ERROS_LOGIN[err.code] || 'Não foi possível entrar. Tente de novo.'
+}
+
 function loginGoogle() {
   document.getElementById('loginStatus').textContent = 'Conectando...'
   const provider = new firebase.auth.GoogleAuthProvider()
@@ -425,13 +435,11 @@ function loginGoogle() {
     auth.signInWithRedirect(provider)
   } else {
     auth.signInWithPopup(provider)
-      .catch(err => { document.getElementById('loginStatus').textContent = 'Erro ao entrar: ' + err.message })
+      .catch(mostrarErroLogin)
   }
 }
 
-auth.getRedirectResult().catch(err => {
-  document.getElementById('loginStatus').textContent = 'Erro ao entrar: ' + err.message
-})
+auth.getRedirectResult().catch(mostrarErroLogin)
 
 function logout() {
   if(!confirm('Sair da conta?')) return
@@ -505,6 +513,7 @@ function setSyncStatus(state) {
   el.className = 'sync-status ' + state
   const labels = { saving: 'Salvando...', synced: 'Sincronizado', error: 'Erro ao salvar', offline: 'Offline' }
   textEl.textContent = labels[state] || ''
+  el.title = labels[state] || ''
 }
 
 window.addEventListener('offline', () => setSyncStatus('offline'))
@@ -628,9 +637,9 @@ function checkTreinoEsquecido(t, draft) {
   const decorrido = Date.now() - draft.inicio
   if(decorrido < LIMITE_ESQUECIDO) return
 
-  const horas = (decorrido / 3600000).toFixed(1).replace('.0', '')
+  const horas = (decorrido / 3600000).toFixed(1).replace('.0', '').replace('.', ',')
   document.getElementById('reminderSub').textContent =
-    `Você iniciou o Treino ${t} há ${horas}h e ele ainda está em aberto — parece que esqueceu de finalizar.`
+    `Você começou o Treino ${t} há ${horas} h e ainda não finalizou.`
   document.getElementById('reminderOverlay').classList.add('show')
 }
 
@@ -722,7 +731,7 @@ const getLista = () => exerciciosCache[treinoAtual] || (treinoAtual === 'B' ? DE
 function init() {
   document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('pt-BR',{
     weekday:'short', day:'2-digit', month:'short'
-  }).toUpperCase()
+  })
   histCache = loadLocalCache()
   draftsCache = loadLocalDrafts()
   exerciciosCache = loadLocalExercicios() || seedDefaultExercicios()
@@ -783,67 +792,48 @@ function renderExView() {
     const numDisplay = String(idx + 1)
     const prev = getPrev(ex.id)
     const done = concluidos.has(ex.id)
-    const sm = numDisplay.length > 1
 
     const card = document.createElement('div')
     card.className = 'ex-card' + (done?' done':'')
     card.id = 'card-' + ex.id
 
-    // last time's numbers
-    let prevHTML = ''
-    if(prev) {
-      const ps = prev.series.map((s,i)=>`S${i+1}: ${s.peso}kg×${s.reps}`).join('  ·  ')
-      prevHTML = `<div class="prev-info">
-        <div class="prev-title">ÚLTIMA SESSÃO</div>
-        <div>${ps}${prev.ajuste?'  ·  <span style="color:var(--accent)">Aj: '+prev.ajuste+'</span>':''}</div>
-      </div>`
-    }
-
-    // sets
-    let seriesHTML = ''
+    // sets: last session sits in its own column so it stays visible while typing
+    let seriesHTML = '<div class="series-head"><span></span><span>Última vez</span><span>kg</span><span>reps</span></div>'
     for(let s=0; s<ex.series; s++) {
       const ps = prev?.series[s]
       seriesHTML += `<div class="serie-row">
-        <div class="serie-label">S${s+1}</div>
-        <div class="input-group">
-          <input class="serie-input" type="text" inputmode="decimal"
-            placeholder="${ps?ps.peso:'kg'}" id="p-${ex.id}-${s}" oninput="saveDraft()">
-          <div class="input-label">kg</div>
-        </div>
-        <div class="serie-sep">×</div>
-        <div class="input-group">
-          <input class="serie-input" type="number" inputmode="numeric"
-            placeholder="${ps?ps.reps:ex.reps.split('-')[0]}" id="r-${ex.id}-${s}" oninput="saveDraft()">
-          <div class="input-label">reps</div>
-        </div>
+        <div class="serie-label">${s+1}</div>
+        <div class="serie-prev">${ps ? `${ps.peso} × ${ps.reps}` : '–'}</div>
+        <input class="serie-input" type="text" inputmode="decimal"
+          placeholder="kg" aria-label="Carga da série ${s+1}, em kg" id="p-${ex.id}-${s}" oninput="saveDraft()">
+        <input class="serie-input" type="number" inputmode="numeric"
+          placeholder="${ex.reps.split('-')[0]}" aria-label="Repetições da série ${s+1}" id="r-${ex.id}-${s}" oninput="saveDraft()">
       </div>`
     }
 
     const ajHTML = ex.ajuste ? `<div class="ajuste-row">
-      <div class="ajuste-label">AJUSTE MÁQ</div>
+      <label class="ajuste-label" for="a-${ex.id}">Ajuste da máquina</label>
       <input class="ajuste-input" type="text" inputmode="numeric"
-        placeholder="${prev?.ajuste||'pino / assento'}" id="a-${ex.id}" oninput="saveDraft()">
+        placeholder="${prev?.ajuste ? 'Última vez: ' + escapeHtml(prev.ajuste) : 'pino / assento'}" id="a-${ex.id}" oninput="saveDraft()">
     </div>` : ''
 
     card.innerHTML = `
       <div class="ex-header" onclick="toggleBody('${ex.id}')">
-        <div class="ex-num ${sm?'sm':''}">${numDisplay}</div>
+        <div class="ex-num">${numDisplay}</div>
         <div class="ex-info">
           <div class="ex-nome">${ex.nome}</div>
           <div class="ex-tags">
-            <span class="tag-musc ${ex.musc}">${ex.musc.toUpperCase()}</span>
-            <span class="tag-series">${ex.series}×${ex.reps}</span>
-            
+            <span class="tag-musc ${ex.musc}">${ex.musc}</span>
+            <span class="tag-series">${ex.series} × ${ex.reps}</span>
           </div>
         </div>
-        <button class="check-btn${done?' checked':''}"
+        <button class="check-btn${done?' checked':''}" aria-label="Marcar exercício como concluído"
           onclick="event.stopPropagation();toggleDone('${ex.id}')">${done?'✓':''}</button>
       </div>
       <div class="ex-body" id="b-${ex.id}">
-        ${prevHTML}
         <div class="series-grid">${seriesHTML}</div>
         ${ajHTML}
-        <button class="chart-trigger" onclick="event.stopPropagation();openChart('${ex.id}','${ex.nome.replace(/'/g,"\\'")}')">VER PROGRESSÃO →</button>
+        <button class="chart-trigger" onclick="event.stopPropagation();openChart('${ex.id}','${ex.nome.replace(/'/g,"\\'")}')">Ver evolução da carga</button>
       </div>`
 
     ul.appendChild(card)
@@ -871,11 +861,11 @@ function renderEditToggleRow() {
   if(editMode) {
     row.innerHTML = `
       <div class="edit-toggle-row-split">
-        <button class="edit-toggle-btn edit-cancel-btn" onclick="cancelEditMode()">✕ CANCELAR</button>
-        <button class="edit-toggle-btn edit-save-btn" onclick="saveEditMode()">✓ SALVAR ALTERAÇÕES</button>
+        <button class="edit-toggle-btn edit-cancel-btn" onclick="cancelEditMode()">Cancelar</button>
+        <button class="edit-toggle-btn edit-save-btn" onclick="saveEditMode()">Salvar alterações</button>
       </div>`
   } else {
-    row.innerHTML = `<button class="edit-toggle-btn" id="editToggleBtn" onclick="enterEditMode()">✎ EDITAR EXERCÍCIOS</button>`
+    row.innerHTML = `<button class="edit-toggle-btn" id="editToggleBtn" onclick="enterEditMode()">Editar exercícios</button>`
   }
 }
 
@@ -904,7 +894,7 @@ function saveEditMode() {
   renderEditToggleRow()
   renderEx()
   updateProgress(); updateStatus(); renderHist()
-  showToast('✓ Treino atualizado!', 'ok')
+  showToast('Alterações salvas.', 'ok')
 }
 
 function renderExEdit() {
@@ -927,18 +917,18 @@ function renderExEdit() {
       </label>
       <div class="edit-actions">
         <div class="edit-reorder-group">
-          <span class="edit-reorder-label">ORDEM</span>
-          <button class="edit-move-btn" title="Mover para cima" onclick="moveEx('${ex.id}',-1)" ${idx===0?'disabled':''}>↑ SUBIR</button>
-          <button class="edit-move-btn" title="Mover para baixo" onclick="moveEx('${ex.id}',1)" ${idx===lista.length-1?'disabled':''}>↓ DESCER</button>
+          <span class="edit-reorder-label">Ordem</span>
+          <button class="edit-move-btn" title="Mover para cima" onclick="moveEx('${ex.id}',-1)" ${idx===0?'disabled':''}>↑ Subir</button>
+          <button class="edit-move-btn" title="Mover para baixo" onclick="moveEx('${ex.id}',1)" ${idx===lista.length-1?'disabled':''}>↓ Descer</button>
         </div>
-        <button class="edit-del-btn" onclick="removeEx('${ex.id}')">EXCLUIR</button>
+        <button class="edit-del-btn" onclick="removeEx('${ex.id}')">Excluir</button>
       </div>`
     ul.appendChild(card)
   })
 
   const addBtn = document.createElement('button')
   addBtn.className = 'add-ex-btn'
-  addBtn.textContent = '+ ADICIONAR EXERCÍCIO'
+  addBtn.textContent = '+ Adicionar exercício'
   addBtn.onclick = addEx
   ul.appendChild(addBtn)
 }
@@ -999,6 +989,7 @@ function toggleDone(id) {
 function updateProgress() {
   const total = getLista().length, done = concluidos.size
   document.getElementById('progressFill').style.width = (total?done/total*100:0)+'%'
+  document.querySelector('.progress-bg').style.setProperty('--n', Math.max(total, 1))
   document.getElementById('progressLabel').textContent = `${done}/${total}`
 }
 
@@ -1036,7 +1027,7 @@ function mostrarFim() {
     }
   })
   const mediaKg = cntKg>0 ? (somaKg/cntKg).toFixed(1) : '—'
-  const nomeT = treinoAtual==='A' ? 'A · SUPERIOR' : 'B · INFERIOR'
+  const nomeT = treinoAtual==='A' ? 'A, superior' : 'B, inferior'
 
   document.getElementById('finishDate').textContent =
     new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'})
@@ -1101,11 +1092,11 @@ function salvarSessao() {
 function toggleTimer() {
   if(timerRunning) {
     clearInterval(timerIv); timerRunning=false
-    document.getElementById('timerBtn').textContent='START'
+    document.getElementById('timerBtn').textContent='Iniciar'
     document.getElementById('timerDisplay').classList.remove('running','pulsing')
   } else {
     timerRunning=true
-    document.getElementById('timerBtn').textContent='STOP'
+    document.getElementById('timerBtn').textContent='Parar'
     document.getElementById('timerDisplay').classList.add('running')
     timerIv = setInterval(()=>{
       timerSecs--; updateTimerUI()
@@ -1113,8 +1104,8 @@ function toggleTimer() {
         clearInterval(timerIv); timerRunning=false
         const d = document.getElementById('timerDisplay')
         d.classList.remove('running'); d.classList.add('done','pulsing')
-        d.textContent='GO!'
-        document.getElementById('timerBtn').textContent='START'
+        d.textContent='Vai!'
+        document.getElementById('timerBtn').textContent='Iniciar'
         setTimeout(()=>{ d.classList.remove('done','pulsing'); resetTimer() }, 2000)
       }
     },1000)
@@ -1124,7 +1115,7 @@ function toggleTimer() {
 function resetTimer() {
   clearInterval(timerIv); timerRunning=false; timerSecs=75
   updateTimerUI()
-  document.getElementById('timerBtn').textContent='START'
+  document.getElementById('timerBtn').textContent='Iniciar'
   document.getElementById('timerDisplay').classList.remove('running','done','pulsing')
 }
 
@@ -1187,7 +1178,7 @@ function renderChartSVG(points) {
 
 function openChart(exId, nome) {
   const points = getExerciseHistory(exId)
-  document.getElementById('chartTitle').textContent = nome
+  document.getElementById('chartTitle').textContent = sentenceCase(nome)
   const subEl = document.getElementById('chartSub')
   const body = document.getElementById('chartBody')
 
@@ -1197,7 +1188,7 @@ function openChart(exId, nome) {
   } else {
     const diff = points[points.length-1].peso - points[0].peso
     const sinal = diff > 0 ? '+' : ''
-    subEl.textContent = `${points.length} sessões · ${sinal}${diff.toFixed(1)}kg desde o início`
+    subEl.textContent = `${points.length} sessões, ${sinal}${diff.toFixed(1).replace('.', ',')} kg desde o início`
     body.innerHTML = renderChartSVG(points)
   }
   document.getElementById('chartOverlay').classList.add('show')
@@ -1207,10 +1198,16 @@ function closeChart() {
   document.getElementById('chartOverlay').classList.remove('show')
 }
 
+// "SUPINO MAQUINA INCLINADO" -> "Supino maquina inclinado"
+const sentenceCase = str => { const t = String(str ?? '').toLowerCase(); return t.charAt(0).toUpperCase() + t.slice(1) }
+
 function renderHist() {
   const h = getHist()
   const el = document.getElementById('histList')
-  if(!h.length) { el.innerHTML='<div class="hist-empty">Nenhuma sessão salva ainda.</div>'; return }
+  if(!h.length) {
+    el.innerHTML = '<div class="hist-empty"><strong>Nenhum treino salvo ainda</strong>Conclua um treino na aba Treino e ele aparece aqui.</div>'
+    return
+  }
   el.innerHTML=''
   h.forEach((s,idx)=>{
     const d = new Date(s.data)
@@ -1219,15 +1216,19 @@ function renderHist() {
     const lista = (exerciciosCache[s.treino] && exerciciosCache[s.treino].length)
       ? exerciciosCache[s.treino]
       : (s.treino==='B' ? DEFAULT_EX_B : DEFAULT_EX_A)
-    const badgeClass = s.treino==='A' ? 'badge-a' : 'badge-b'
-    const modoLabel = s.treino==='A' ? 'SUPERIOR' : 'INFERIOR'
+    const modoLabel = s.treino==='A' ? 'superior' : 'inferior'
+    const mesmoAno = d.getFullYear() === new Date().getFullYear()
+    const dataTxt = d.toLocaleDateString('pt-BR', mesmoAno
+      ? {weekday:'short',day:'numeric',month:'short'}
+      : {weekday:'short',day:'numeric',month:'short',year:'numeric'})
+    const horaTxt = d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})
     let rows=''
     Object.keys(s.exercicios||{}).forEach(exId=>{
       const data=s.exercicios[exId]; if(!data) return
       const exIdx = lista.findIndex(e=>e.id===exId)
-      const nome = exIdx>=0 ? `${exIdx+1}. ${lista[exIdx].nome}` : exId
-      const ps = data.series.map(sr=>`${sr.peso}kg×${sr.reps}`).join(' · ')
-      const aj = data.ajuste?` · <span style="color:var(--accent)">Aj:${data.ajuste}</span>`:''
+      const nome = exIdx>=0 ? `${exIdx+1}. ${sentenceCase(lista[exIdx].nome)}` : escapeHtml(exId)
+      const ps = data.series.map(sr=>`<span>${escapeHtml(sr.peso)} × ${escapeHtml(sr.reps)}</span>`).join('')
+      const aj = data.ajuste ? `<span class="hist-aj">ajuste ${escapeHtml(data.ajuste)}</span>` : ''
       rows+=`<div class="hist-row">
         <div class="hist-exname">${nome}</div>
         <div class="hist-series">${ps}${aj}</div>
@@ -1238,13 +1239,14 @@ function renderHist() {
     entry.innerHTML=`
       <div class="hist-meta">
         <div>
-          <div class="hist-date">${d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'2-digit'}).toUpperCase()} · ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
+          <div class="hist-date">${dataTxt}</div>
           <div class="hist-badges">
-            <span class="hist-badge ${badgeClass}">TREINO ${s.treino} · ${modoLabel}</span>
-            ${s.duracao?`<span class="hist-badge badge-dur">${s.duracao} min</span>`:''}
+            <span>Treino ${s.treino}, ${modoLabel}</span>
+            ${s.duracao?`<span>${s.duracao} min</span>`:''}
+            <span>${horaTxt}</span>
           </div>
         </div>
-        <button class="hist-delete" onclick="delHist(${idx})">✕</button>
+        <button class="hist-delete" aria-label="Excluir o treino de ${dataTxt}" onclick="delHist(${idx})">Excluir</button>
       </div>${rows}`
     el.appendChild(entry)
   })
@@ -1274,7 +1276,7 @@ function exportarDados() {
   a.download = `treino-backup-${data}.json`
   a.click()
   URL.revokeObjectURL(url)
-  showToast('✓ Backup exportado!', 'ok')
+  showToast('Backup exportado.', 'ok')
 }
 
 function importarDados(event) {
@@ -1312,7 +1314,7 @@ function processarArquivoImportado(file) {
       const draftAtual = getDraftFromDOM()
       persistHist(merged)
       switchToTreino(treinoAtual, draftAtual); renderHist(); updateStatus()
-      showToast(`✓ ${novas.length} sessão(ões) importada(s)!`, 'ok')
+      showToast(`${novas.length} ${novas.length === 1 ? 'sessão importada' : 'sessões importadas'}.`, 'ok')
     } catch {
       showToast('Erro ao ler arquivo. Verifique o formato.', 'err')
     }
@@ -1346,7 +1348,7 @@ function updateStatus() {
     valEl.textContent  = 'Nenhum ainda'
     valEl.style.color  = 'var(--muted)'
     whenEl.textContent = ''
-    nextEl.textContent = 'PRÓXIMO: —'
+    nextEl.textContent = 'Próximo: —'
     nextEl.className   = 'status-next-badge'
   } else {
     const t    = ultimo.treino
@@ -1361,12 +1363,12 @@ function updateStatus() {
 
     const modoLabel = ''
     iconEl.textContent = t
-    valEl.textContent  = `TREINO ${t}${modoLabel}`
+    valEl.textContent  = `Treino ${t}${modoLabel}`
     valEl.style.color  = 'var(--text)'
-    whenEl.textContent = quando + (ultimo.duracao ? ` · ${ultimo.duracao} min` : '')
+    whenEl.textContent = quando + (ultimo.duracao ? `, ${ultimo.duracao} min` : '')
 
     const proximo = t==='A' ? 'B' : 'A'
-    nextEl.textContent = `PRÓXIMO: ${proximo}`
+    nextEl.textContent = `Próximo: treino ${proximo}`
     nextEl.className   = `status-next-badge ${proximo.toLowerCase()}`
   }
 
@@ -1388,13 +1390,13 @@ function updateStatus() {
   if(estado === 'safe') {
     msgEl.textContent = sessoesA === 0
       ? 'Complete sessões para acompanhar o ciclo.'
-      : `Faltam ${META - sessoesA} sessão(ões) para revisar os exercícios.`
+      : `Faltam ${META - sessoesA} ${META - sessoesA === 1 ? 'sessão' : 'sessões'} para revisar os exercícios.`
     msgEl.className = 'ciclo-msg'
   } else if(estado === 'warn') {
-    msgEl.textContent = `Quase lá — ${META - sessoesA} sessão(ões) para trocar o treino.`
+    msgEl.textContent = `Quase lá: ${META - sessoesA === 1 ? 'falta 1 sessão' : `faltam ${META - sessoesA} sessões`} para trocar o treino.`
     msgEl.className = 'ciclo-msg'
   } else {
-    msgEl.textContent = '🔄 16 sessões completas. Hora de trocar — chama o mentor!'
+    msgEl.textContent = '16 sessões completas. Hora de trocar de treino: chame o mentor.'
     msgEl.className = 'ciclo-msg ready'
   }
 }
