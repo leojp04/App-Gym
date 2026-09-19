@@ -119,6 +119,11 @@
   .add-ex-btn { width: 100%; padding: 13px; border-radius: 12px; border: 1px dashed var(--border); background: transparent; color: var(--accent); font-family: var(--ui); font-size: 11.5px; letter-spacing: 0.4px; cursor: pointer; margin-bottom: 9px; }
   .add-ex-btn:active { transform: scale(.98); }
 
+  /* finish workout early */
+  .finalizar-row { padding: 4px 16px 0; }
+  .finalizar-btn { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: 'DM Mono', monospace; font-size: 11.5px; letter-spacing: 0.4px; cursor: pointer; }
+  .finalizar-btn:active { transform: scale(.98); }
+
   /* progress chart */
   .chart-overlay { display: none; position: fixed; inset: 0; z-index: 850; background: rgba(26,28,27,0.94); align-items: center; justify-content: center; padding: 20px; }
   .chart-overlay.show { display: flex; }
@@ -308,6 +313,9 @@
 <div id="viewTreino">
   <div class="edit-toggle-row" id="editToggleRow"></div>
   <div class="content" id="exList"></div>
+  <div class="finalizar-row" id="finalizarRow">
+    <button class="finalizar-btn" onclick="finalizarTreino()">FINALIZAR TREINO</button>
+  </div>
 </div>
 <div id="viewHistorico" style="display:none">
   <div class="backup-row">
@@ -848,6 +856,7 @@ function escapeHtml(str) {
 let editDraft = null
 
 function renderEditToggleRow() {
+  document.getElementById('finalizarRow').style.display = editMode ? 'none' : ''
   const row = document.getElementById('editToggleRow')
   if(editMode) {
     row.innerHTML = `
@@ -987,11 +996,30 @@ function updateProgress() {
 // ══════════════════════════════════════════
 // finish screen
 // ══════════════════════════════════════════
+// an exercise is part of the session if it was ticked off or has any number typed in
+function exercicioTemDados(ex) {
+  if(concluidos.has(ex.id)) return true
+  for(let s=0; s<ex.series; s++) {
+    if(document.getElementById(`p-${ex.id}-${s}`)?.value || document.getElementById(`r-${ex.id}-${s}`)?.value) return true
+  }
+  return false
+}
+
+// lets you wrap up a workout without ticking every exercise
+function finalizarTreino() {
+  if(editMode) { showToast('Termine ou cancele a edição antes de finalizar.', 'err'); return }
+  if(!getLista().some(exercicioTemDados)) {
+    showToast('Marque ou preencha ao menos um exercício.', 'err')
+    return
+  }
+  mostrarFim()
+}
+
 function mostrarFim() {
   const durMin = Math.round((Date.now()-inicio)/60000)
   const lista = getLista()
   let totalSeries=0, somaKg=0, cntKg=0
-  lista.forEach(ex => {
+  lista.filter(exercicioTemDados).forEach(ex => {
     for(let s=0; s<ex.series; s++) {
       totalSeries++
       const p = parseFloat((document.getElementById(`p-${ex.id}-${s}`)?.value||'0').replace(',','.'))
@@ -1007,7 +1035,7 @@ function mostrarFim() {
   document.getElementById('finishStats').innerHTML = `
     <div class="fstat"><div class="fstat-label">TREINO</div><div class="fstat-val">${nomeT}</div></div>
     <div class="fstat"><div class="fstat-label">DURAÇÃO</div><div class="fstat-val">${durMin} min</div></div>
-    <div class="fstat"><div class="fstat-label">EXERCÍCIOS</div><div class="fstat-val">${lista.length}/${lista.length}</div></div>
+    <div class="fstat"><div class="fstat-label">EXERCÍCIOS</div><div class="fstat-val">${concluidos.size}/${lista.length}</div></div>
     <div class="fstat"><div class="fstat-label">SÉRIES TOTAIS</div><div class="fstat-val">${totalSeries}</div></div>
     <div class="fstat"><div class="fstat-label">CARGA MÉDIA</div><div class="fstat-val">${mediaKg} kg</div></div>`
 
@@ -1038,6 +1066,8 @@ function salvarSessao() {
     exercicios: {}
   }
   lista.forEach(ex => {
+    // exercises left untouched in a partial workout stay out, so their previous numbers keep showing
+    if(!exercicioTemDados(ex)) return
     const series = []
     for(let s=0; s<ex.series; s++) {
       series.push({
